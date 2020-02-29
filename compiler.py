@@ -17,6 +17,11 @@ def readinput():
 		currentline = currentline.strip('\n')
 		currentline = currentline.strip('\t')
 
+		#replace any tabs
+		currentline = currentline.replace('\t','')
+		#currentline = currentline.replace('\n','')
+
+
 		print("currentline is ",currentline)
 		 #split the line based on the colon
 		colonSplit = currentline.split(":")
