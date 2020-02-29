@@ -1,8 +1,10 @@
+import sys
 def readinput():
 
 	#store the file in a list, with each new line as a new element
 	lines = list(open("example.txt"))
 	validsets = ["variables:","constants:","predicates:","equality:","connectives:","quantifiers:"]
+	
 	i=0
 	while i<(len(lines)):
 	
@@ -47,6 +49,7 @@ def readinput():
 			formula=colonSplit[1]
 		else:
 			print("invalid maate")
+			sys.exit()
 			print("this is it ", colonSplit)
 
 		#use a while loop
