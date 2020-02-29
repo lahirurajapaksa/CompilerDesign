@@ -44,55 +44,70 @@ def readinput():
 	lines = list(open("example.txt"))
 	validsets = ["variables","constants","predicates","equality","connectives","quantifiers"]
 	i=0
+	formulaFound=False
 	while i<(len(lines)):
-		formulaFound = False
-		try:
+	
 
-			currentline = lines[i]
-			print(currentline)
-			#strip the line of whitespace and trailing newline char
-			currentline.strip()
-			currentline = currentline.strip('\n')
-			currentline = currentline.strip('\t')
+		currentline = lines[i]
+		print(currentline)
+		#strip the line of whitespace and trailing newline char
+		currentline.strip()
+		currentline = currentline.strip('\n')
+		currentline = currentline.strip('\t')
 
 
-			 #split the line based on the colon
-			colonSplit = currentline.split(":")
+		 #split the line based on the colon
+		colonSplit = currentline.split(":")
 
-			print("colonSplit is ", colonSplit)
+		print("colonSplit is ", colonSplit)
 
-			#check whether we are dealing with 'formuala', if so we need to check the next lines as well
-			#use a while loop
-			if colonSplit[0]=='formula':
-				formulaFound=True
-				#add the current line's data to the formula
-				formula = colonSplit[1]
+		#check whether we are dealing with 'formuala', if so we need to check the next lines as well
+		#use a while loop
+		if colonSplit[0]=='formula':
+			formulaFound=True
+			#add the current line's data to the formula
+			formula = colonSplit[1]
 
-			if formulaFound==True:
-				stop = False
-				originali = i 
-				while stop==False:
+		if formulaFound==True:
+			stop = False
+			i=i+1
+			while stop==False:
+				nextline = lines[i]
+				nextline = nextline.strip('\n')
+				nextline = nextline.strip('\t')
+
+				#split the line in to several elements
+
+				nextlinesplit = nextline.split()
+
+				if nextlinesplit[0] in validsets:
+					#the next line is not part of the formula
+					i=i-1
+					stop = True
+				else:
+					#add it to the formula
+					formula = formula + str(nextline)
 					i=i+1
-					nextline = lines[i]
-					nextline = nextline.strip('\n')
-					nextline = nextline.strip('\t')
 
-					#split the line in to several elements
+		if colonSplit[0]=="variables":
+			variables = colonSplit[1]
+			i=i+1
+		elif colonSplit[0]=="constants":
+		 	constants = colonSplit[1]
+		 	i=i+1
+		elif colonSplit[0]=="predicates":
+		 	predicates = colonSplit[1]
+		 	i=i+1
+		elif colonSplit[0]=="equality":
+		 	equality = colonSplit[1]
+		 	i=i+1
+		elif colonSplit[0]=="connectives":
+		 	connectives = colonSplit[1]
+		 	i=i+1
+		elif colonSplit[0]=="quantifiers":
+		 	quantifiers = colonSplit[1]
+		 	i=i+1
 
-					nextlinesplit = nextline.split()
-
-					if nextlinesplit[0] in validsets:
-						#the next line is not part of the formula
-						i=i-1
-						stop = True
-					else:
-						#add it to the formula
-						formula = formula + str(nextline)
-						i=i+1
-
-
-		except:
-			print("invalid format")
 
 
 
