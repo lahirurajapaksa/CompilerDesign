@@ -145,12 +145,33 @@ validname="0123456789_"
 #define the production for 'variables'
 print("variable ->", end = " ")
 for i in range(len(variables)):
-	print("|",variables[i], end=" ")
+	#check whether the variable name consists of only alphanumeric characters and underscore
+	currentvariable = variables[i]
+	for j in range(len(currentvariable)):
+		if (currentvariable[j].isalpha()==True) or (currentvariable[j] in validname):
+			continue
+		else:
+			print("\n")
+			print("incorrect variable name, must only contain alphanumeric characters and underscore")
+			sys.exit()
+	
+	print("|",currentvariable, end=" ")
+
 print('\n')
 
 #define the production for constants
 print("constants ->", end = " ")
 for i in range(len(constants)):
+	currentconstant = constants[i]
+
+	for j in range(len(currentconstant)):
+		if (currentconstant[j].isalpha()==True) or (currentconstant[j] in validname):
+			continue
+		else:
+			print("\n")
+			print("incorrect constant name, must only contain alphanumeric characters and underscore")
+			sys.exit()
+
 	print("|",constants[i], end=" ")
 print('\n')
 
@@ -213,9 +234,21 @@ for i in range(len(predicates)):
 		sys.exit()
 	elif predicatename in constants:
 		print("predicate name is the same as a constant name")
+		sys.exit()
 
 	#print the production for predicates
+
+	#predicate name and opening bracket
+	print(predicatename+"[",end="")
+	#'variable' repeated arity times 
+	for i in range(int(arity)-1):
+		print("variable, ",end="")
+
+	print("variable],",end=" ")
+
 	
+
+
 print('\n')
 
 
