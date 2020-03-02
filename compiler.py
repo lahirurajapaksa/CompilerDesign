@@ -259,11 +259,60 @@ for i in range(len(predicates)):
 		print("variable, ",end="")
 
 	print("variable]",end=" ")
+print("\n")
 
-	
+#define the production for equality
+print("equality ->", end = " ")
+for i in range(len(equality)):
+	currentequality = equality[i]
+
+	for j in range(len(currentequality)):
+		if (currentequality[j]=="="):
+			continue
+		else:
+			print("\n")
+			print("incorrect equality used, must be =")
+			sys.exit()
+
+	if i==0:
+		print(equality[i], end=" ")
+		continue
 
 
+	print("|",equality[i], end=" ")
 print('\n')
+
+#define the production for connectives
+print("connectives ->", end = " ")
+#check that the connectives are a set of 5
+if len(connectives)!=5:
+	print("connectives set is not of size 5")
+	sys.exit()
+
+for i in range(len(connectives)):
+
+	currentconnective = connectives[i]
+
+
+	# for j in range(len(currentconnective)):
+	# 	if (currentconnective[j]=="="):
+	# 		continue
+	# 	else:
+	# 		print("\n")
+	# 		print("incorrect equality used, must be =")
+	# 		sys.exit()
+
+	if i==0:
+		print(currentconnective, end=" ")
+		continue
+
+
+	print("|",currentconnective, end=" ")
+print('\n')
+
+
+
+
 
 
 
