@@ -126,16 +126,9 @@ check = any(item in variables for item in constants)
 if check == True:
 	print("Variables and constants cant be the same")
 	sys.exit()
-#double for loop to check iterate through every predicate to compare against the variables
-# for i in range(len(predicates)):
-# 	for j in range(len(predicates[i])):
-# 		if predicates[i][j] in variables:
-# 			print(predicates[i][j])
-# 			print("predicates and variables cannot be the same")
-# 			sys.exit()
 
 
-################################## Produce the grammar ###################################
+################################## Produce the grammar + more error checking ###################################
 
 #the set of non terminals are the same for every input file
 nonterminals = ["variables","constants","predicates","equality","connectives","quantifiers","formula"]	
@@ -154,7 +147,10 @@ for i in range(len(variables)):
 			print("\n")
 			print("incorrect variable name, must only contain alphanumeric characters and underscore")
 			sys.exit()
-	
+	if i==0:
+		print(currentvariable, end=" ")
+		continue
+
 	print("|",currentvariable, end=" ")
 
 print('\n')
@@ -171,6 +167,11 @@ for i in range(len(constants)):
 			print("\n")
 			print("incorrect constant name, must only contain alphanumeric characters and underscore")
 			sys.exit()
+
+	if i==0:
+		print(constants[i], end=" ")
+		continue
+
 
 	print("|",constants[i], end=" ")
 print('\n')
@@ -237,14 +238,27 @@ for i in range(len(predicates)):
 		sys.exit()
 
 	#print the production for predicates
+	#we check for i=0 in order to get the proper formatting with | symbol
+	if i==0:
 
-	#predicate name and opening bracket
-	print(predicatename+"[",end="")
+		#predicate name and opening bracket
+		print(predicatename+"[",end="")
+		#'variable' repeated arity times 
+		for i in range(int(arity)-1):
+			print("variable, ",end="")
+
+		print("variable]",end=" ")
+
+		continue
+
+
+	print("|",predicatename+"[",end="")
+
 	#'variable' repeated arity times 
 	for i in range(int(arity)-1):
 		print("variable, ",end="")
 
-	print("variable],",end=" ")
+	print("variable]",end=" ")
 
 	
 
