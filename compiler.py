@@ -5,7 +5,7 @@ import sys
 #store the file in a list, with each new line as a new element
 lines = list(open("example.txt"))
 validsets = ["variables:","constants:","predicates:","equality:","connectives:","quantifiers:"]
-
+productiondict={}
 i=0
 while i<(len(lines)):
 
@@ -99,6 +99,7 @@ constants = constants.strip()
 constants = constants.split(' ')
 print("constants =", constants)
 
+
 predicates = predicates.strip()
 predicates = predicates.split(' ')
 print("predicates =", predicates)
@@ -133,6 +134,7 @@ if check == True:
 #the set of non terminals are the same for every input file
 nonterminals = ["variables","constants","predicates","equality","connectives","quantifiers","formula"]	
 validname="0123456789_"
+
 #define the production rules
 
 #define the production for 'variables'
@@ -155,6 +157,10 @@ for i in range(len(variables)):
 
 print('\n')
 
+#store it in the dict
+productiondict['variables']=variables
+
+
 #define the production for constants
 print("constants ->", end = " ")
 for i in range(len(constants)):
@@ -176,9 +182,12 @@ for i in range(len(constants)):
 	print("|",constants[i], end=" ")
 print('\n')
 
+#store it in the dict
+productiondict['constants']=constants
 
-varstring = "variable"
+
 #define the production for predicates
+predicatelist= []
 print("predicates ->", end = " ")
 for i in range(len(predicates)):
 	currentpredicate = predicates[i]
@@ -237,6 +246,10 @@ for i in range(len(predicates)):
 		print("predicate name is the same as a constant name")
 		sys.exit()
 
+	predicatestring = predicatename	#supposed to be like P[variables,variables]
+
+	predicatestring = predicatename+"["
+
 	#print the production for predicates
 	#we check for i=0 in order to get the proper formatting with | symbol
 	if i==0:
@@ -245,9 +258,14 @@ for i in range(len(predicates)):
 		print(predicatename+"[",end="")
 		#'variable' repeated arity times 
 		for i in range(int(arity)-1):
-			print("variable, ",end="")
+			print("variables, ",end="")
 
-		print("variable]",end=" ")
+			#append to predicatestring
+			predicatestring = predicatestring + "variables,"
+
+		predicatestring = predicatestring +"variables]"
+		predicatelist.append(predicatestring)
+		print("variables]",end=" ")
 
 		continue
 
@@ -258,8 +276,16 @@ for i in range(len(predicates)):
 	for i in range(int(arity)-1):
 		print("variable, ",end="")
 
-	print("variable]",end=" ")
+		#append to predicatestring
+		predicatestring = predicatestring + "variables"
+
+	predicatestring = predicatestring + "variables]"
+	predicatelist.append(predicatestring)
+	print("variables]",end=" ")
 print("\n")
+
+#store it in the dict
+productiondict['predicates']=predicatelist
 
 #define the production for equality
 print("equality ->", end = " ")
@@ -281,6 +307,10 @@ for i in range(len(equality)):
 
 	print("|",equality[i], end=" ")
 print('\n')
+
+#store it in the dict
+productiondict['equality']=equality
+
 
 #define the production for connectives
 print("connectives ->", end = " ")
@@ -310,8 +340,73 @@ for i in range(len(connectives)):
 	print("|",currentconnective, end=" ")
 print('\n')
 
+#store it in the dict
+productiondict['connectives']=connectives
 
 
+#define the production for quantifiers
+print("quantifiers ->", end = " ")
+for i in range(len(quantifiers)):
+	currentquantifier = quantifiers[i]
+
+	# for j in range(len(currentquantifier)):
+		# if (currentquantifier[j]=="="):
+		# 	continue
+		# else:
+		# 	print("\n")
+		# 	print("incorrect equality used, must be =")
+		# 	sys.exit()
+
+	if i==0:
+		print(currentquantifier, end=" ")
+		continue
+
+
+	print("|",currentquantifier, end=" ")
+print('\n')
+
+#store it in the dict
+productiondict['quantifiers']=quantifiers
+
+#define the production for formulas
+print("formula ->", end = " ")
+
+print('\n')
+#make the four rules + others in the spec for formulas
+
+#define the term production rule
+print("term -> variable | constant")
+termlist=['variable','constant']
+productiondict['terms'] = termlist
+print('\n')
+
+#use the term rule to define the primitive formula rule
+
+#define rule 2 (C = D), (C = x), (x = C) and (x = y) are valid
+# term = term
+print("specrule2 -> term equality term")
+#get the equality set
+equals = productiondict['equality']
+rule2 = ['term',equality,'term']
+
+print(rule2)
+
+#define rule 3 formula ^ formula , and so on
+#use the connectives set to define this
+c = productiondict['connectives']
+
+print('specrule3 -> ', end=" ")
+
+for i in range(len(c)):
+	currentcon = c[i]
+	if i==0:
+		print("formula",currentcon,"formula", end=" ")
+
+	print("|","formula",currentcon,"formula", end=" ")
+
+print('\n')
+
+print("dict is ", productiondict)
 
 
 
