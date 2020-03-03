@@ -383,7 +383,7 @@ print('\n')
 #use the term rule to define the primitive formula rule
 
 #define rule 2 (C = D), (C = x), (x = C) and (x = y) are valid
-# term = term
+
 print("specrule2 -> term equality term")
 #get the equality set
 equals = productiondict['equality']
@@ -391,23 +391,55 @@ rule2 = ['term',equality,'term']
 
 print(rule2)
 
+
 #define rule 3 formula ^ formula , and so on
 #use the connectives set to define this
 c = productiondict['connectives']
-
-print('specrule3 -> ', end=" ")
+rule3list = []
+print('formula -> ', end=" ")
 
 for i in range(len(c)):
+	currentstring = ""
 	currentcon = c[i]
 	if i==0:
 		print("formula",currentcon,"formula", end=" ")
+		currentstring = "formula " + currentcon + " formula"
+		rule3list.append(currentstring)
+		continue
+
+	currentstring = "formula " + currentcon + " formula"
+	rule3list.append(currentstring)
 
 	print("|","formula",currentcon,"formula", end=" ")
 
+productiondict['formula3'] = rule3list
+print('\n')
+
+#define rule 4 - there exists x formula, for all x formula as long as x is a variable
+
+print('formula ->',end=" ")
+
+q = productiondict['quantifiers']
+rule4list = []
+#use the quantifiers set to check for stuff in front of 
+for i in range(len(q)):
+	currentstring=""
+	currentq = q[i]
+
+	if i == 0:
+		print(currentq," variable"," formula",end=" ")
+		currentstring = currentq + " variable " + "formula"
+		rule4list.append(currentstring)
+		continue
+
+	currentstring = currentq + " variable " + "formula"
+	rule4list.append(currentstring)
+	print("|",currentq,"variable ","formula",end=" ")
+
+productiondict['formula4'] = rule4list
 print('\n')
 
 print("dict is ", productiondict)
-
 
 
 
