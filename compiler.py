@@ -1,9 +1,10 @@
 import sys
-
+import string
+import re
 ########################################## Read the input ########################################
 
 #store the file in a list, with each new line as a new element
-lines = list(open("example.txt"))
+lines = list(open("example2.txt"))
 validsets = ["variables:","constants:","predicates:","equality:","connectives:","quantifiers:"]
 productiondict={}
 i=0
@@ -18,17 +19,15 @@ while i<(len(lines)):
 	currentline = currentline.strip('\n')
 	currentline = currentline.strip('\t')
 
-	#replace any tabs
-	currentline = currentline.replace('\t','')
-	#currentline = currentline.replace('\n','')
+	currentline=' '.join(currentline.split())
+	print("AFTer",currentline)
 
 
-	print("currentline is ",currentline)
 	 #split the line based on the colon
 	colonSplit = currentline.split(":")
 
 
-	print("colonSplit is ", colonSplit)
+#	print("colonSplit is ", colonSplit)
 
 	if colonSplit[0]=="variables":
 		variables = colonSplit[1]
@@ -46,9 +45,7 @@ while i<(len(lines)):
 	 	connectives = colonSplit[1]
 	 	i=i+1
 	elif colonSplit[0]=="quantifiers":
-		print("for quantifiers colonsplit[1] is ",colonSplit[1])
 		quantifiers = colonSplit[1]
-		print("quantifiers is ",quantifiers)
 		i=i+1
 	elif colonSplit[0]=="formula":
 	#check whether we are dealing with 'formuala', if so we need to check the next lines as well
@@ -58,14 +55,12 @@ while i<(len(lines)):
 	else:
 		print("invalid maate")
 		sys.exit()
-		print("this is it ", colonSplit)
 
 	#use a while loop
 
 	if formulaFound==True:
 		stop = False
 		i=i+1
-		print("i+1 is ",i,"before entering while loop")
 		while stop==False and i<len(lines):
 			nextline = lines[i]
 			nextline = nextline.strip('\n')
@@ -74,17 +69,14 @@ while i<(len(lines)):
 			#split the line in to several elements
 
 			nextlinesplit = nextline.split()
-			print("first element of next line is ",nextlinesplit[0])
 			if nextlinesplit[0] in validsets:
 				#the next line is not part of the formula
 				#i=i-1
-				print("next line is not part of formula so i is ",i)
 				stop = True
 			elif nextlinesplit[0] not in validsets:
 				#add it to the formula
-				formula = formula + str(nextline)
+				formula = formula +" "+str(nextline)
 				i=i+1
-				print("adding to formula so i is",i)
 
 
 
@@ -107,20 +99,47 @@ print("predicates =", predicates)
 equality = equality.strip()
 equality = equality.split(' ')
 print("equality =", equality)
+#check whether nothing is given
+if equality[0]=="":
+	print("equality is blank")
+	sys.exit()
 
 connectives = connectives.strip()
 connectives = connectives.split(' ')
 print("connectives =", connectives)
 
+
 quantifiers = quantifiers.strip()
 quantifiers = quantifiers.split(' ')
 print("quantifiers =", quantifiers)
 
-
+print("String here")
+print(formula)
 formula = formula.strip()
 formula = formula.split(' ')
 print("formula =", formula)
 print('\n')
+newformula=[]
+for i in range(len(formula)):
+	r = re.compile('|'.join([re.escape(w) for w in connectives]), flags=re.I)
+	check = r.findall(formula[i])
+	if (formula[i] in quantifiers) or (formula[i] in connectives) or (formula[i] in variables) or (formula[i] in constants) or (formula[i] in equality):
+		print("just append, DO NOT MAP", formula[i])
+		newformula.append(formula[i])
+	
+	# elif (len(check)>0):
+	# 	print("check is ",check)
+	# 	if (check[0] in connectives):
+	# 		print(" CONNECTIVE !!!just append, DO NOT MAP", formula[i])
+	# 		print(r.findall(formula[i]))
+	# 		newformula.append(check[0])
+	else:
+		print("MAP THIS!",formula[i])
+		formula[i] = list(map(str,formula[i]))
+		newformula.extend(formula[i])
+print("new formula is",newformula)
+
+#iterate through formula and split the 
 
 #check whether constants, predicates and variables all have different names
 check = any(item in variables for item in constants)
@@ -139,7 +158,11 @@ validname="0123456789_"
 #define the production rules
 
 #define the start symbol
+#print("start -> formula | formula start | NULL ")
 print("start -> formula")
+#store the start symbol
+startlist = ['formula','start + formula','NULL']
+productiondict['start'] = startlist
 print('\n')
 
 
@@ -164,7 +187,7 @@ for i in range(len(variables)):
 
 print('\n')
 
-#store it in the dict
+#store it in the dict 
 productiondict['variables']=variables
 
 
@@ -197,22 +220,20 @@ productiondict['constants']=constants
 
 #define the production for equality
 print("equality ->", end = " ")
+print("equality is ",equality,")")
 if len(equality)!=1:
 	print("Equality set is not equal to size 1")
 	sys.exit()
 for i in range(len(equality)):
 	currentequality = equality[i]
-	#check whether the length of the equality symbol is equal to one
-	if len(currentequality)!=1:
-		print("equality set is not equal to size one")
-		sys.exit()
 
 	for j in range(len(currentequality)):
-		if (currentequality[j]=="="):
+		if (currentequality[j].isalpha()==True) or (currentequality[j] in validname) or (currentequality[j]=="="):
 			continue
+			
 		else:
 			print("\n")
-			print("incorrect equality used, must be =")
+			print("incorrect equality used, must be alphanumeric or =")
 			sys.exit()
 
 	if i==0:
@@ -247,13 +268,13 @@ for i in range(len(connectives)):
 	currentconnective = connectives[i]
 
 
-	# for j in range(len(currentconnective)):
-	# 	if (currentconnective[j]=="="):
-	# 		continue
-	# 	else:
-	# 		print("\n")
-	# 		print("incorrect equality used, must be =")
-	# 		sys.exit()
+	for j in range(len(currentconnective)):
+		if (currentconnective[j].isalpha()==True) or (currentconnective[j] in validname):
+			continue
+		else:
+			print("\n")
+			print("incorrect quantifier name used, must contain alphanumeric characters or _")
+			sys.exit()
 
 	if i==0:
 		print(currentconnective, end=" ")
@@ -275,13 +296,13 @@ if len(quantifiers)!=2:
 for i in range(len(quantifiers)):
 	currentquantifier = quantifiers[i]
 
-	# for j in range(len(currentquantifier)):
-		# if (currentquantifier[j]=="="):
-		# 	continue
-		# else:
-		# 	print("\n")
-		# 	print("incorrect equality used, must be =")
-		# 	sys.exit()
+	for j in range(len(currentquantifier)):
+		if (currentquantifier[j].isalpha()==True) or (currentquantifier[j] in validname):
+			continue
+		else:
+			print("\n")
+			print("incorrect quantifier name used, must be alphanumeric or _")
+			sys.exit()
 
 	if i==0:
 		print(currentquantifier, end=" ")
@@ -310,72 +331,24 @@ print('\n')
 
 #define rule 2 (C = D), (C = x), (x = C) and (x = y) are valid
 
-print("formula -> term equality term |",end=" ")
+print("formula -> (term equality term) |",end=" ")
 #get the equality set
 equals = productiondict['equality']
 rule2 = ['(','term',equality,'term',')']
 formulaproductions.append(rule2)
 
 
-#define rule 3 formula ^ formula , and so on
-#use the connectives set to define this
-# c = productiondict['connectives']
-# rule3list = []
-# print('formula -> ', end=" ")
-
-# for i in range(len(c)):
-# 	currentstring = ""
-# 	currentcon = c[i]
-# 	if i==0:
-# 		print("formula",currentcon,"formula", end=" ")
-# 		currentstring = "formula " + currentcon + " formula"
-# 		rule3list.append(currentstring)
-# 		continue
-
-# 	currentstring = "formula " + currentcon + " formula"
-# 	rule3list.append(currentstring)
-
-# 	print("|","formula",currentcon,"formula", end=" ")
-
-# productiondict['formula'] = rule3list
-#productiondict['formula'] = productiondict['formula'].extend(rule3list)
-
 
 
 #define formula connective formula
-print('formula connective formula',end=" ")
+print('(formula connective formula)',end=" ")
 
 connectiveset = productiondict['connectives']
 rule3 = ['(','formula',connectiveset,'formula',')']
 formulaproductions.append(rule3)
 
 
-
-
-
 #define rule 4 - there exists x formula, for all x formula as long as x is a variable
-
-
-# q = productiondict['quantifiers']
-# rule4list = []
-# #use the quantifiers set to check for stuff in front of 
-# for i in range(len(q)):
-# 	currentstring=""
-# 	currentq = q[i]
-
-# 	if i == 0:
-# 		print(currentq," variable"," formula",end=" ")
-# 		currentstring = currentq + " variable " + "formula"
-# 		rule4list.append(currentstring)
-# 		continue
-
-# 	currentstring = currentq + " variable " + "formula"
-# 	rule4list.append(currentstring)
-# 	print("|",currentq,"variable ","formula",end=" ")
-
-#productiondict['formula4'] = rule4list
-
-# productiondict['formula'] = productiondict['formula']+rule4list
 
 
 
@@ -492,8 +465,8 @@ formulaproductions.append(predicatelist)
 
 
 #add the negation formula element
-print("| ",negationelement," formula")
-negationlist = [negationelement,'formula']
+print("| ",negationelement,"(formula)")
+negationlist = ['(',negationelement,"(",'formula',')']
 formulaproductions.append(negationlist)
 print("\n")
 
@@ -502,9 +475,22 @@ productiondict['formula']=formulaproductions
 print("dict is ", productiondict)
 
 
+#recursive descent parser
+
+#list of non-terminals 
+nonterminals = ['start','variable','constants','equality','connectives','quantifiers','term','formula']
+
+#list of terminals will be stored in the 'formula' list
 
 
-#we test whether the formula is valid by trying to recreate the string with the production rules
+#define input pointer and descent pointers
+ip = 0
+dp = 0
+
+#define match procedure (this will be executed if the current token is a terminal)
+#this will compare the element at ip against the element at dp
+
+#define procedure for every non -terminal
 
 
 
