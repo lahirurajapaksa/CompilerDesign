@@ -4,7 +4,7 @@ import re
 ########################################## Read the input ########################################
 
 #store the file in a list, with each new line as a new element
-lines = list(open("example2.txt"))
+lines = list(open("example.txt"))
 validsets = ["variables:","constants:","predicates:","equality:","connectives:","quantifiers:"]
 productiondict={}
 i=0
@@ -121,8 +121,9 @@ print("formula =", formula)
 print('\n')
 newformula=[]
 for i in range(len(formula)):
-	r = re.compile('|'.join([re.escape(w) for w in connectives]), flags=re.I)
-	check = r.findall(formula[i])
+	# r = re.compile('|'.join([re.escape(w) for w in connectives]), flags=re.I)
+	# check = r.findall(formula[i])
+
 	if (formula[i] in quantifiers) or (formula[i] in connectives) or (formula[i] in variables) or (formula[i] in constants) or (formula[i] in equality):
 		print("just append, DO NOT MAP", formula[i])
 		newformula.append(formula[i])
@@ -135,8 +136,12 @@ for i in range(len(formula)):
 	# 		newformula.append(check[0])
 	else:
 		print("MAP THIS!",formula[i])
-		formula[i] = list(map(str,formula[i]))
-		newformula.extend(formula[i])
+		# formula[i] = list(map(str,formula[i]))
+		print("formula i is ",formula[i])
+		s=formula[i]
+		s=[s.strip() for s in  re.split(r'([\(\),])', s.strip()) if s]
+		print("S is ",s)
+		newformula.extend(s)
 print("new formula is",newformula)
 
 #iterate through formula and split the 
