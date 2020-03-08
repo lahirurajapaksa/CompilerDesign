@@ -166,7 +166,8 @@ validname="0123456789_"
 #print("start -> formula | formula start | NULL ")
 print("start -> formula")
 #store the start symbol
-startlist = ['formula','start + formula','NULL']
+#startlist = ['formula','start + formula','NULL']
+startlist = ['formula']
 productiondict['start'] = startlist
 print('\n')
 
@@ -225,7 +226,6 @@ productiondict['constants']=constants
 
 #define the production for equality
 print("equality ->", end = " ")
-print("equality is ",equality,")")
 if len(equality)!=1:
 	print("Equality set is not equal to size 1")
 	sys.exit()
@@ -272,13 +272,12 @@ for i in range(len(connectives)):
 
 	currentconnective = connectives[i]
 
-
 	for j in range(len(currentconnective)):
-		if (currentconnective[j].isalpha()==True) or (currentconnective[j] in validname):
+		if (currentconnective[j].isalpha()==True) or (currentconnective[j] in validname) or(currentconnective[j]=="\\"):
 			continue
 		else:
 			print("\n")
-			print("incorrect quantifier name used, must contain alphanumeric characters or _")
+			print("incorrect connective name used, must contain alphanumeric characters or _")
 			sys.exit()
 
 	if i==0:
@@ -302,7 +301,7 @@ for i in range(len(quantifiers)):
 	currentquantifier = quantifiers[i]
 
 	for j in range(len(currentquantifier)):
-		if (currentquantifier[j].isalpha()==True) or (currentquantifier[j] in validname):
+		if (currentquantifier[j].isalpha()==True) or (currentquantifier[j] in validname) or (currentquantifier[j]=="\\"):
 			continue
 		else:
 			print("\n")
@@ -339,7 +338,7 @@ print('\n')
 print("formula -> (term equality term) |",end=" ")
 #get the equality set
 equals = productiondict['equality']
-rule2 = ['(','term',equality,'term',')']
+rule2 = ['(','term','equality','term',')']
 formulaproductions.append(rule2)
 
 
@@ -349,10 +348,10 @@ formulaproductions.append(rule2)
 print('(formula connective formula)',end=" ")
 
 connectiveset = productiondict['connectives']
-rule3 = ['(','formula',connectiveset,'formula',')']
+rule3 = ['(','formula','connectives','formula',')']
 formulaproductions.append(rule3)
 
-
+ 
 #define rule 4 - there exists x formula, for all x formula as long as x is a variable
 
 
@@ -362,7 +361,7 @@ print('| quantifier variable formula|',end=" ")
 quantifierset = productiondict['quantifiers']
 varset = productiondict['variables']
 
-rule4 = [quantifierset,varset,'formula']
+rule4 = ['quantifiers','variable','formula']
 formulaproductions.append(rule4)
 
 
@@ -429,14 +428,14 @@ for i in range(len(predicates)):
 
 	predicatestring = predicatename	#supposed to be like P[variables,variables]
 
-	predicatestring = predicatename+"["
+	predicatestring = predicatename+"("
 
 	#print the production for predicates
 	#we check for i=0 in order to get the proper formatting with | symbol
 	if i==0:
 
 		#predicate name and opening bracket
-		print(predicatename+"[",end="")
+		print(predicatename+"(",end="")
 		#'variable' repeated arity times 
 		for i in range(int(arity)-1):
 			print("variable, ",end="")
@@ -444,14 +443,14 @@ for i in range(len(predicates)):
 			#append to predicatestring
 			predicatestring = predicatestring + "variable,"
 
-		predicatestring = predicatestring +"variable]"
+		predicatestring = predicatestring +"variable)"
 		predicatelist.append(predicatestring)
-		print("variable]",end=" ")
+		print("variable)",end=" ")
 
 		continue
 
 
-	print("|",predicatename+"[",end="")
+	print("|",predicatename+"(",end="")
 
 	#'variable' repeated arity times 
 	for i in range(int(arity)-1):
@@ -460,9 +459,9 @@ for i in range(len(predicates)):
 		#append to predicatestring
 		predicatestring = predicatestring + "variable"
 
-	predicatestring = predicatestring + "variable]"
+	predicatestring = predicatestring + "variable)"
 	predicatelist.append(predicatestring)
-	print("variable]",end=" ")
+	print("variable)",end=" ")
 
 
 #append to formulaproductions
@@ -487,15 +486,96 @@ nonterminals = ['start','variable','constants','equality','connectives','quantif
 
 #list of terminals will be stored in the 'formula' list
 
+#access the elements in the dict (dont forget!)
 
 #define input pointer and descent pointers
-ip = 0
-dp = 0
-
+lookahead = 0
+descent = 0
 #define match procedure (this will be executed if the current token is a terminal)
 #this will compare the element at ip against the element at dp
-
+def match():
+	lookahead+=1
+	descent +=1
 #define procedure for every non -terminal
+def start():
+	formulaproc()
 
 
+def variableproc():
+	#access the variable dict
+	variablerules = productiondict['variable']
+
+	for i in range(len(variablerules)):
+		if formula[lookahead] == variablerules[i]:
+			print("match")
+			match()
+		else:
+			print("Error: Variable did not match")
+
+
+def constantproc():
+	#access the constant dict
+	constantrules = productiondict['constants']
+
+	for i in range(len(constantrules)):
+		if formula[lookahead] == constantrules[i]:
+			print("match")
+			match()
+		else:
+			print("Error: Variable did not match")
+
+
+def equalityproc():
+	#access the equality rule
+	equalityrule = productiondict['equality']
+
+	if formula[lookahead] == equalityrule[0]:
+		print("equality rule match")
+		match()
+	else:
+		print("ERROR: equality does not match")
+
+def connectiveproc():
+	#access the connectives rule
+	connectivesrule = productiondict['connectives']
+
+	for i in range(len(connectivesrule)):
+		if formula[lookahead]==connectivesrule[i]:
+			print("connectives match")
+			match()
+		else:
+			print("ERROR: connective did not match")
+
+def quantifierproc():
+	#access the quantifier rule
+	quantifiersrule = productiondict['quantifiers']
+
+	for i in range(len(quantifiersrule)):
+		if formula[lookahead]==quantifiersrule[i]:
+			print("quantifier match")
+			match()
+		else:
+			print("ERROR: quantifier did not match")
+
+
+def formulaproc():
+	#access the formula dict 
+	formularules = productiondict['formula']
+
+	match = False
+	k=0
+	while match == False:
+		#try each production rule in the list, increment k if there is no match
+		currentproduction = formularules[k]
+		lengthofprod = len(formularules)
+
+		p = 0 
+
+		if formula[lookahead] == formularules[p]:
+			match()
+		else:
+			k+=1
+			continue
+
+start()
 
