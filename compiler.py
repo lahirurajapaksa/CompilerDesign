@@ -509,9 +509,10 @@ def variableproc():
 		if formula[lookahead] == variablerules[i]:
 			print("match")
 			match()
+			return 1
 		else:
 			print("Error: Variable did not match")
-
+			return 0
 
 def constantproc():
 	#access the constant dict
@@ -521,8 +522,19 @@ def constantproc():
 		if formula[lookahead] == constantrules[i]:
 			print("match")
 			match()
+			return 1
 		else:
 			print("Error: Variable did not match")
+			return 0
+
+def termproc():
+	#access the term rules
+	termrules = productiondict['terms']
+
+	if variableproc()==1:
+		return 1
+	else:
+		return 0
 
 
 def equalityproc():
@@ -532,9 +544,10 @@ def equalityproc():
 	if formula[lookahead] == equalityrule[0]:
 		print("equality rule match")
 		match()
+		return 1
 	else:
 		print("ERROR: equality does not match")
-
+		return 0
 def connectiveproc():
 	#access the connectives rule
 	connectivesrule = productiondict['connectives']
@@ -543,8 +556,10 @@ def connectiveproc():
 		if formula[lookahead]==connectivesrule[i]:
 			print("connectives match")
 			match()
+			return 1
 		else:
 			print("ERROR: connective did not match")
+			return 0
 
 def quantifierproc():
 	#access the quantifier rule
@@ -554,9 +569,10 @@ def quantifierproc():
 		if formula[lookahead]==quantifiersrule[i]:
 			print("quantifier match")
 			match()
+			return 1
 		else:
 			print("ERROR: quantifier did not match")
-
+			return 0
 
 def formulaproc():
 	#access the formula dict 
@@ -571,11 +587,44 @@ def formulaproc():
 
 		p = 0 
 
+		if k==0:
+			if formula[lookahead]=="(":
+				match()
+
+				if termproc() ==1:
+					match()
+
+
+					if equalityproc()==1:
+						match()
+
+
+						if termproc()==1:
+							match()
+
+							if formula[lookahead]==")":
+								match()
+							else:
+								k+=1
+						else:
+							k+=1
+					else:
+						k+=1
+				else:
+					k+=1
+			else:
+				k+=1
+				
+		elif k==1:
+
+
 		if formula[lookahead] == formularules[p]:
 			match()
 		else:
 			k+=1
 			continue
+
+
 
 start()
 
