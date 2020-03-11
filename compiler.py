@@ -513,7 +513,7 @@ nonterminals = ['start','variable','constants','equality','connectives','quantif
 formula = newformula
 
 # #define input pointer and descent pointers
-# lookahead = 0
+#lookahead = 0
 # #define match procedure (this will be executed if the current token is a terminal)
 # #can build the tree here in the same go
 
@@ -523,7 +523,8 @@ def match():
 
 #define procedure for every non -terminal
 def start():
-	formulaproc()
+	x = formulaproc()
+	print("formula proc result is ", x)
 
 
 def variableproc():
@@ -533,7 +534,7 @@ def variableproc():
 	print(variablerules)
 
 	if formula[lookahead] in variablerules:
-		print("match")
+		print("variable match")
 		return 1
 	else:
 		print('Error in variable function: Variable did not match')
@@ -548,7 +549,7 @@ def constantproc():
 	constantrules = productiondict['constants']
 
 	if formula[lookahead] in constantrules:
-		print('match')
+		print('constant match')
 		return 1
 	else:
 		print("Error in constant function: Constant did not match")
@@ -570,6 +571,7 @@ def termproc():
 		return 0
 
 
+
 def equalityproc():
 	#access the equality rule
 	equalityrule = productiondict['equality']
@@ -587,7 +589,7 @@ def equalityproc():
 def connectiveproc():
 	#access the connectives rule
 	connectivesrule = productiondict['connectives']
-
+	print("Connectives",connectivesrule)
 	if formula[lookahead] in connectivesrule:
 		print('Connectives match')
 		return 1
@@ -611,63 +613,241 @@ def quantifierproc():
 		return 0
 
 
-# lookahead = 6
-# print('\n')
-# print("lookahead set to",lookahead)
-# def predicateproc():
-# 	global lookahead
-# 	#access the predicate rules
-# 	predicaterules = productiondict['predicate']
-# 	names = productiondict['predicatenames']
-# 	aritylist = productiondict['predicatearity']
+def predicateproc():
+	global lookahead
+	#access the predicate rules
+	predicaterules = productiondict['predicate']
+	names = productiondict['predicatenames']
+	aritylist = productiondict['predicatearity']
 
-# 	found = False
-# 	for i in range(len(predicaterules)):
-# 		#currentpredicate = predicate[i]
-# 		print("formula lookahead is ",formula[lookahead])
-# 		if formula[lookahead] in names:
-# 			print(formula[lookahead]," in names list, so match")
-# 			match()
-# 			if formula[lookahead] == "(":
-# 				match()
-# 				print(formula[lookahead], "is (, so match")
+	found = False
+	for i in range(len(predicaterules)):
+		#currentpredicate = predicate[i]
+		print("formula lookahead is ",formula[lookahead])
+		if formula[lookahead] in names:
+			print(formula[lookahead]," in names list, so match")
+			match()
+			if formula[lookahead] == "(":
+				match()
+				print(formula[lookahead], "is (, so match")
 
-# 				currentarity = aritylist[i]
+				currentarity = aritylist[i]
 
-# 				print("Current arity is ",currentarity)
+				print("Current arity is ",currentarity)
 
-# 				for j in range(int(currentarity)):
-# 					#iterate through the arity
-# 					if variableproc() == 1:
+				for j in range(int(currentarity)):
+					#iterate through the arity
+					if variableproc() == 1:
+						match()
+					if formula[lookahead] == ",":
+						match()
 
-# 						match()
+				if formula[lookahead] == ")":
+					match()
+					found = True
+					print("Predicate match")
+					return 1
 
-# 				if formula[lookahead] == ")":
-# 					match()
-# 					found = True
-# 					return 1
+			else:
+				print(formula[lookahead],"is not (")
+				break
+		
+		else:
+			print(formula[lookahead]," is not a valid predicate name")
+			break
 
-# 	if found == False:
-# 		return 0
 
-# pred = predicateproc()
-# print(pred)
+	if found == False:
+		return 0
+
+def termequalityterm():
+	global lookahead
+
+	if formula[lookahead]=="(":
+				match()
+
+				if termproc() ==1:
+					match()
+
+					if equalityproc()==1:
+						match()
+
+						if termproc()==1:
+							match()
+
+							if formula[lookahead]==")":
+								#match()
+								return 1
+							else:
+								lookahead = 0
+								return 0
+						else:
+							lookahead = 0
+							return 0
+					else:
+						lookahead = 0
+						return 0
+				else:
+					lookahead = 0
+					return 0
+	else:
+		lookahead = 0
+		return 0
+
+
+def fcf():
+	global lookahead
+
+	if formula[lookahead]=="(":
+		match()
+
+		if formulaproc()==1:
+			match()
+
+			if connectiveproc()==1:
+				match()
+
+				if formulaproc()==1:
+					match()
+
+					if formula[lookahead]==")":
+						#match()
+						return 1
+					else:
+						lookahead =0 
+						return 0
+
+				else:
+					lookahead = 0
+					return 0
+
+			else:
+				lookahead = 0
+				return 0
+
+		else:
+			lookahead = 0
+			return 0
+	else:
+		lookahead = 0
+		return 0
+
+def qvf():
+	global lookahead
+
+	if quantifierproc()==1:
+		match()
+
+		if variableproc()==1:
+			match()
+
+			if formulaproc()==1:
+				#match()
+				return 1
+
+			else:
+				lookahead =0
+				return 0
+
+		else:
+			lookahead =0
+			return 0
+
+	else:
+		lookahead =0
+		return 0
+
+
+def negformula():
+	global lookahead
+
+	if formula[lookahead] =='\\neg':
+		match()
+
+		if formulaproc()==1:
+			#match()
+			return 1
+
+		else:
+			lookahead = 0
+			return 0
+
+	else:
+		lookahead = 0 
+		return 0
+
+
+
+
+
+def formulaproc():
+
+	global lookahead
+
+	#call fcf 
+	fcfresult = fcf()
+	if fcfresult == 0:
+
+		lookahead = 0
+
+		#call qvf
+		qvfresult = qvf()
+		if qvfresult == 0:
+
+			lookahead = 0
+			negresult = negformula()
+
+
+			if negresult == 0:
+
+				lookahead = 0
+				predresult = predicateproc()
+
+				if predresult == 0:
+					lookahead = 0
+					tetresult = termequalityterm()
+					
+					if tetresult == 0:
+						print("not a valid formula")
+						return 0
+
+					else:
+						print("formula is term equality term")
+						return 1
+
+				else:
+					print("formula is predicate")
+					return 1
+			else:
+				print("formula is neg formula")
+				return 1
+		else:
+			print("formula is quantifier variable formula")
+			return 1
+	else:
+		print("formula is fcf")
+		return 1
+
+
+lookahead = 0
+start()
+
 
 			
 
 
 # def formulaproc():
+# 	global lookahead
 # 	#access the formula dict 
 # 	formularules = productiondict['formula']
 
-# 	match = False
+# 	match1 = False
 # 	k=0
-# 	while match == False:
+# 	while match1 == False:
 # 		#try each production rule in the list, increment k if there is no match
 # 		currentproduction = formularules[k]
 # 		lengthofprod = len(formularules)
 
-# 		p = 0 
 # 		lookaheadbeforek0=lookahead
 # 		#(term equality term)
 # 		if k==0:
@@ -687,6 +867,7 @@ def quantifierproc():
 
 # 							if formula[lookahead]==")":
 # 								match()
+# 								match1 = True
 # 								return 1
 # 							else:
 # 								lookahead = 0
@@ -719,6 +900,7 @@ def quantifierproc():
 
 # 						if formulaproc()==1:
 # 							match()
+# 							match1 = True
 
 # 							return 1
 
@@ -750,6 +932,7 @@ def quantifierproc():
 
 # 					if formulaproc()==1:
 # 						match()
+# 						match1 = True
 # 						return 1
 
 # 					else:
@@ -774,6 +957,7 @@ def quantifierproc():
 
 # 				if formulaproc()==1:
 # 					match()
+# 					match1 = True
 # 					return 1
 
 # 				else:
@@ -789,24 +973,19 @@ def quantifierproc():
 
 # 			if predicateproc()==1:
 # 				match()
+# 				match1 = True
 # 				return 1
 
 
 # 		else:
 
 # 			print("Formula is invalid")
+# 			return 0 
 # 			sys.exit()
 
 
 
 
 
-
-
-
-
-
-
-
-#start()
+#result = start()
 
