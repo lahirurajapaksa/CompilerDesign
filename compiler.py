@@ -641,7 +641,7 @@ def predicateproc():
 						match()
 
 				if formula[lookahead] == ")":
-					match()
+					#match()
 					found = True
 					print("Predicate match")
 					return 1
@@ -674,22 +674,22 @@ def termequalityterm():
 							match()
 
 							if formula[lookahead]==")":
-								match() #was commented out earlier
+								#match() #was commented out earlier
 								return 1
 							else:
-								lookahead = 0
+								#lookahead = 0
 								return 0
 						else:
-							lookahead = 0
+							#lookahead = 0
 							return 0
 					else:
-						lookahead = 0
+						#lookahead = 0
 						return 0
 				else:
-					lookahead = 0
+					#lookahead = 0
 					return 0
 	else:
-		lookahead = 0
+		#lookahead = 0
 		return 0
 
 
@@ -718,26 +718,26 @@ def fcf():
 						return 1
 					else:
 						print("fcf: NO ) match",formula[lookahead])
-						lookahead =0 
+						#lookahead =0 
 						return 0
 
 				else:
 					print("fcf: NO second formula match",formula[lookahead])
-					lookahead = 0
+					#lookahead = 0
 					return 0
 
 			else:
 				print("fcf: NO connective match",formula[lookahead])
-				lookahead = 0
+				#lookahead = 0
 				return 0
 
 		else:
 			print("fcf: NO first formula match",formula[lookahead])
-			lookahead = 0
+			#lookahead = 0
 			return 0
 	else:
 		print("fcf: NO ( match",formula[lookahead])
-		lookahead = 0
+		#lookahead = 0
 		return 0
 
 def qvf():
@@ -752,23 +752,23 @@ def qvf():
 			match()
 
 			if formulaproc()==1:
-				print("qvf: formula match",formula[lookahead])
-				match() #this was commented out earlier - match()
+				#print("qvf: formula match",formula[lookahead])
+				#match() #this was commented out earlier - match()
 				return 1
 
 			else:
 				print("qvf: formula NO match",formula[lookahead])
-				lookahead =0
+				#lookahead =0
 				return 0
 
 		else:
 			print("qvf: variable NO match",formula[lookahead])
-			lookahead =0
+			#lookahead =0
 			return 0
 
 	else:
 		print("qvf: quantifier NO match",formula[lookahead])
-		lookahead =0
+		#lookahead =0
 		return 0
 
 
@@ -780,18 +780,18 @@ def negformula():
 		match()
 
 		if formulaproc()==1:
-			print("Negformula: formula match",formula[lookahead])
-			match() #was commented out earlier
+			#print("Negformula: formula match",formula[lookahead])
+			#match() #was commented out earlier
 			return 1
 
 		else:
-			print("Negformula: formula NO match",formula[lookahead])
-			lookahead = 0
+			#print("Negformula: formula NO match",formula[lookahead])
+			#lookahead = 0
 			return 0
 
 	else:
 		print("Negformula: \\neg NO match",formula[lookahead])
-		lookahead = 0 
+		#lookahead = 0 
 		return 0
 
 
