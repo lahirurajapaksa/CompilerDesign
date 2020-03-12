@@ -125,7 +125,7 @@ for i in range(len(formula)):
 	# check = r.findall(formula[i])
 
 	if (formula[i] in quantifiers) or (formula[i] in connectives) or (formula[i] in variables) or (formula[i] in constants) or (formula[i] in equality):
-		print("just append, DO NOT MAP", formula[i])
+		#print("just append, DO NOT MAP", formula[i])
 		newformula.append(formula[i])
 	
 	# elif (len(check)>0):
@@ -135,12 +135,12 @@ for i in range(len(formula)):
 	# 		print(r.findall(formula[i]))
 	# 		newformula.append(check[0])
 	else:
-		print("MAP THIS!",formula[i])
+		#print("MAP THIS!",formula[i])
 		# formula[i] = list(map(str,formula[i]))
-		print("formula i is ",formula[i])
+		#print("formula i is ",formula[i])
 		s=formula[i]
 		s=[s.strip() for s in  re.split(r'([\(\),])', s.strip()) if s]
-		print("S is ",s)
+		#print("S is ",s)
 		newformula.extend(s)
 print("new formula is",newformula)
 
@@ -441,7 +441,6 @@ for i in range(len(predicates)):
 	productiondict['predicate']=predicatelist
 	productiondict['predicatenames'] = predicatenames
 	productiondict['predicatearity'] = predicatearity
-	print(productiondict['predicatearity'])
 
 
 print('\n')
@@ -489,8 +488,8 @@ formulaproductions.append(rule4)
 
 
 #add the negation formula element
-print("| ",negationelement,"(formula)",end=" ")
-negationlist = ['(',negationelement,"(",'formula',')']
+print("| ",negationelement,"formula",end=" ")
+negationlist = ['(',negationelement,'formula']
 formulaproductions.append(negationlist)
 
 
@@ -531,7 +530,6 @@ def variableproc():
 	global lookahead
 	#access the variable dict
 	variablerules = productiondict['variables']
-	print(variablerules)
 
 	if formula[lookahead] in variablerules:
 		print("variable match")
@@ -676,7 +674,7 @@ def termequalityterm():
 							match()
 
 							if formula[lookahead]==")":
-								#match()
+								match() #was commented out earlier
 								return 1
 							else:
 								lookahead = 0
@@ -699,36 +697,46 @@ def fcf():
 	global lookahead
 
 	if formula[lookahead]=="(":
+		print("fcf: ( match",formula[lookahead])
 		match()
 
 		if formulaproc()==1:
+			print("fcf: formula match",formula[lookahead])
 			match()
 
 			if connectiveproc()==1:
+				print("fcf: connective match",formula[lookahead])
 				match()
 
 				if formulaproc()==1:
+					print("fcf: formula match",formula[lookahead])
 					match()
 
 					if formula[lookahead]==")":
+						print("fcf: ) match",formula[lookahead])
 						#match()
 						return 1
 					else:
+						print("fcf: NO ) match",formula[lookahead])
 						lookahead =0 
 						return 0
 
 				else:
+					print("fcf: NO second formula match",formula[lookahead])
 					lookahead = 0
 					return 0
 
 			else:
+				print("fcf: NO connective match",formula[lookahead])
 				lookahead = 0
 				return 0
 
 		else:
+			print("fcf: NO first formula match",formula[lookahead])
 			lookahead = 0
 			return 0
 	else:
+		print("fcf: NO ( match",formula[lookahead])
 		lookahead = 0
 		return 0
 
@@ -736,24 +744,30 @@ def qvf():
 	global lookahead
 
 	if quantifierproc()==1:
+		print("qvf: quantifier match",formula[lookahead])
 		match()
 
 		if variableproc()==1:
+			print("qvf: variable match",formula[lookahead])
 			match()
 
 			if formulaproc()==1:
-				#match()
+				print("qvf: formula match",formula[lookahead])
+				match() #this was commented out earlier - match()
 				return 1
 
 			else:
+				print("qvf: formula NO match",formula[lookahead])
 				lookahead =0
 				return 0
 
 		else:
+			print("qvf: variable NO match",formula[lookahead])
 			lookahead =0
 			return 0
 
 	else:
+		print("qvf: quantifier NO match",formula[lookahead])
 		lookahead =0
 		return 0
 
@@ -762,17 +776,21 @@ def negformula():
 	global lookahead
 
 	if formula[lookahead] =='\\neg':
+		print("Negformula: \\neg match",formula[lookahead])
 		match()
 
 		if formulaproc()==1:
-			#match()
+			print("Negformula: formula match",formula[lookahead])
+			match() #was commented out earlier
 			return 1
 
 		else:
+			print("Negformula: formula NO match",formula[lookahead])
 			lookahead = 0
 			return 0
 
 	else:
+		print("Negformula: \\neg NO match",formula[lookahead])
 		lookahead = 0 
 		return 0
 
@@ -785,29 +803,44 @@ def formulaproc():
 	global lookahead
 
 	#call fcf 
+	initlook = lookahead
+
+	print("Calling formula connective formula")
+
 	fcfresult = fcf()
 	if fcfresult == 0:
+		print(" formula connective formula result is 0 ")
 
-		lookahead = 0
+		lookahead = initlook
+
 
 		#call qvf
+		print("Calling quantifier variable formula")
 		qvfresult = qvf()
 		if qvfresult == 0:
+			print("Quantifer variable formula result is 0")
 
-			lookahead = 0
+			lookahead = initlook
+
+			print("Calling neg formula")
 			negresult = negformula()
-
-
 			if negresult == 0:
+				print("Neg formula result is 0")
 
-				lookahead = 0
+				lookahead = initlook
+
+				print("callinf predicate formula")
 				predresult = predicateproc()
 
 				if predresult == 0:
-					lookahead = 0
+					print("predicate result is 0")
+					lookahead = initlook
+
+					print("calling term equality term function")
 					tetresult = termequalityterm()
-					
+
 					if tetresult == 0:
+						print("term equality term result is 0")
 						print("not a valid formula")
 						return 0
 
@@ -832,8 +865,6 @@ def formulaproc():
 lookahead = 0
 start()
 
-
-			
 
 
 # def formulaproc():
