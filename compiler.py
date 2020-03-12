@@ -1,6 +1,8 @@
 import sys
 import string
 import re
+from anytree import Node, RenderTree
+from anytree.exporter import DotExporter
 ########################################## Read the input ########################################
 
 #store the file in a list, with each new line as a new element
@@ -515,6 +517,7 @@ formula = newformula
 #lookahead = 0
 # #define match procedure (this will be executed if the current token is a terminal)
 # #can build the tree here in the same go
+global parentpointer
 
 def match():
 	global lookahead
@@ -522,11 +525,21 @@ def match():
 
 #define procedure for every non -terminal
 def start():
+	global Start
+	Start = Node("start")
+
+	global Formulanode
+	Formulanode = Node("formula", parent = Start)
+
+
+
 	x = formulaproc()
 	print("formula proc result is ", x)
 
 
 def variableproc():
+	global parentpointer
+
 	global lookahead
 	#access the variable dict
 	variablerules = productiondict['variables']
@@ -539,9 +552,9 @@ def variableproc():
 		print(formula[lookahead],"is not a variable")
 		return 0
 
-
-
 def constantproc():
+	global parentpointer
+
 	global lookahead
 	#access the constant dict
 	constantrules = productiondict['constants']
@@ -563,10 +576,12 @@ def termproc():
 
 	if (variableproc()==1 or constantproc()==1):
 		print('term match')
-		return 1
+		currentnode = [Node(formula[lookahead])] 
+		return 1,currentnode
 	else:
 		print('term did not match')
-		return 0
+		notthere = "nothing"
+		return 0,notthere
 
 
 
@@ -576,15 +591,20 @@ def equalityproc():
 
 	if formula[lookahead] == equalityrule[0]:
 		print("equality rule match")
+		currentnode = [Node(formula[lookahead])]
 		#match()
-		return 1
+		return 1,currentnode
+
+
 	else:
 		print("ERROR in equality function: equality does not match")
 		print(formula[lookahead],"is not an equality")
-		return 0
+		notthere = "nothing"
+		return 0,notthere
 
 
 def connectiveproc():
+	global parentpointer
 	#access the connectives rule
 	connectivesrule = productiondict['connectives']
 	print("Connectives",connectivesrule)
@@ -599,6 +619,7 @@ def connectiveproc():
 
 
 def quantifierproc():
+	global parentpointer
 	#access the quantifier rule
 	quantifiersrule = productiondict['quantifiers']
 
@@ -612,6 +633,8 @@ def quantifierproc():
 
 
 def predicateproc():
+	global parentpointer
+
 	global lookahead
 	#access the predicate rules
 	predicaterules = productiondict['predicate']
@@ -659,23 +682,42 @@ def predicateproc():
 		return 0
 
 def termequalityterm():
-	global lookahead
 
+	global parentpointer
+
+	global lookahead
+	treedata= []
 	if formula[lookahead]=="(":
 				match()
 
-				if termproc() ==1:
+				term1check, dataterm1 = termproc() 
+				if term1check ==1:
 					match()
 
-					if equalityproc()==1:
+					equalitycheck, equalitydata = equalityproc()
+					if equalitycheck==1:
 						match()
 
-						if termproc()==1:
+						term2check, dataterm2 = termproc()
+						if term2check==1:
 							match()
 
 							if formula[lookahead]==")":
+								treedata.extend(equalitydata)
+								print(equalitydata)
+								treedata.extend(dataterm1)
+								print(dataterm1)
+								
+								treedata.extend(dataterm2)
+								print(dataterm2)
+
+							#make the terms children of equality
+								treedata[1].parent = treedata[0]
+								treedata[2].parent = treedata[0]
+
+
 								#match() #was commented out earlier
-								return 1
+								return 1,treedata
 							else:
 								#lookahead = 0
 								return 0
@@ -694,6 +736,8 @@ def termequalityterm():
 
 
 def fcf():
+	global parentpointer
+
 	global lookahead
 
 	if formula[lookahead]=="(":
@@ -741,6 +785,8 @@ def fcf():
 		return 0
 
 def qvf():
+	global parentpointer
+
 	global lookahead
 
 	if quantifierproc()==1:
@@ -774,19 +820,18 @@ def qvf():
 
 def negformula():
 	global lookahead
+
+	global parentpointer
+
 	#negation element should be used here
 	if formula[lookahead] ==negationelement:
 		print("Negformula: \\neg match",formula[lookahead])
 		match()
 
 		if formulaproc()==1:
-			#print("Negformula: formula match",formula[lookahead])
-			#match() #was commented out earlier
 			return 1
 
 		else:
-			#print("Negformula: formula NO match",formula[lookahead])
-			#lookahead = 0
 			return 0
 
 	else:
@@ -796,11 +841,11 @@ def negformula():
 
 
 
-
-
 def formulaproc():
+	global parentpointer
 
 	global lookahead
+	
 
 	#call fcf 
 	initlook = lookahead
@@ -845,6 +890,8 @@ def formulaproc():
 						return 0
 
 					else:
+
+
 						print("formula is term equality term")
 						return 1
 
@@ -852,6 +899,7 @@ def formulaproc():
 					print("formula is predicate")
 					return 1
 			else:
+
 				print("formula is neg formula")
 				return 1
 		else:
@@ -863,7 +911,15 @@ def formulaproc():
 
 
 lookahead = 0
-start()
+#start()
+
+#make the graph
+
+result,data = termequalityterm()
+
+
+#DotExporter(Start).dot_dotfile("graph.dot")
+DotExporter(data[0]).to_picture("test2.png")
 
 
 
