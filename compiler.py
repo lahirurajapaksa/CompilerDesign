@@ -6,7 +6,7 @@ from anytree.exporter import DotExporter
 ########################################## Read the input ########################################
 
 #store the file in a list, with each new line as a new element
-lines = list(open("example.txt"))
+lines = list(open("example2.txt"))
 validsets = ["variables:","constants:","predicates:","equality:","connectives:","quantifiers:"]
 productiondict={}
 i=0
@@ -944,12 +944,14 @@ def negformula():
 	#negation element should be used here
 	if formula[lookahead] ==negationelement:
 		print("Negformula: \\neg match",formula[lookahead])
+		negationNode = [Node(formula[lookahead]+'\r'*uniqueids)]
 		match()
 
 		formulacheck, formuladata = formulaproc()
 		if formulacheck==1:
 
-			currentdata.extend(negationelement)
+			currentdata.extend(negationNode)
+			formuladata[0].parent = currentdata[0]
 			currentdata.extend(formuladata)
 			return 1, currentdata
 
