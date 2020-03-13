@@ -519,6 +519,8 @@ formula = newformula
 # #can build the tree here in the same go
 global parentpointer
 
+uniqueids = 0
+
 def match():
 	global lookahead
 	lookahead+=1
@@ -546,11 +548,15 @@ def variableproc():
 
 	if formula[lookahead] in variablerules:
 		print("variable match")
-		return 1
+		global uniqueids
+		currentnode = [Node(formula[lookahead] + "\r"*uniqueids)]
+		
+		uniqueids +=1
+		return 1,currentnode
 	else:
 		print('Error in variable function: Variable did not match')
 		print(formula[lookahead],"is not a variable")
-		return 0
+		return 0,"nothing"
 
 def constantproc():
 	global parentpointer
@@ -561,37 +567,52 @@ def constantproc():
 
 	if formula[lookahead] in constantrules:
 		print('constant match')
-		return 1
+		global uniqueids
+		currentnode = [Node(formula[lookahead]+ "\r"*uniqueids)]
+		
+		uniqueids +=1
+		return 1,currentnode
 	else:
 		print("Error in constant function: Constant did not match")
 		print(formula[lookahead],"is not a constant")
-		return 0
+		return 0,"nothing"
 
 
 
 
 def termproc():
+	global lookahead
 	#access the term rules
 	termrules = productiondict['terms']
 
-	if (variableproc()==1 or constantproc()==1):
+	varresult, vardata = variableproc()
+	constresult, constdata = constantproc()
+
+	if (varresult==1 or constresult==1):
 		print('term match')
-		currentnode = [Node(formula[lookahead])] 
+		global uniqueids
+		currentnode = [Node(formula[lookahead]+ "\r"*uniqueids)] 
+		
+		uniqueids +=1
 		return 1,currentnode
 	else:
-		print('term did not match')
+		print('term did not match',formula[lookahead])
 		notthere = "nothing"
 		return 0,notthere
 
 
 
 def equalityproc():
+	global lookahead
 	#access the equality rule
 	equalityrule = productiondict['equality']
 
 	if formula[lookahead] == equalityrule[0]:
 		print("equality rule match")
-		currentnode = [Node(formula[lookahead])]
+		global uniqueids
+		currentnode = [Node(formula[lookahead]+ "\r"*uniqueids)]
+		
+		uniqueids +=1
 		#match()
 		return 1,currentnode
 
@@ -604,38 +625,49 @@ def equalityproc():
 
 
 def connectiveproc():
+	global lookahead
 	global parentpointer
 	#access the connectives rule
 	connectivesrule = productiondict['connectives']
 	print("Connectives",connectivesrule)
 	if formula[lookahead] in connectivesrule:
 		print('Connectives match')
-		return 1
+		global uniqueids
+		currentnode = [Node(formula[lookahead]+ "\r"*uniqueids)]
+		
+		uniqueids +=1
+		return 1,currentnode
 	else:
 		print("ERROR in connectives function")
 		print(formula[lookahead]," is not a connective")
-		return 0
+		return 0,"nothing"
 
 
 
 def quantifierproc():
+	global lookahead
 	global parentpointer
 	#access the quantifier rule
 	quantifiersrule = productiondict['quantifiers']
 
 	if formula[lookahead] in quantifiersrule:
 		print('Quantifiers match')
-		return 1
+		global uniqueids
+		currentnode = [Node(formula[lookahead]+ "\r"*uniqueids)]
+		
+		uniqueids +=1
+		return 1, currentnode
 	else:
 		print("ERROR in quantifiers function")
 		print(formula[lookahead]," is not a quantifier")
-		return 0
+		return 0,"nothing"
 
 
 def predicateproc():
 	global parentpointer
-
+	currentnode =[]
 	global lookahead
+	global uniqueids
 	#access the predicate rules
 	predicaterules = productiondict['predicate']
 	names = productiondict['predicatenames']
@@ -643,11 +675,16 @@ def predicateproc():
 
 	found = False
 	for i in range(len(predicaterules)):
-		#currentpredicate = predicate[i]
+
 		print("formula lookahead is ",formula[lookahead])
 		if formula[lookahead] in names:
 			print(formula[lookahead]," in names list, so match")
+			prednode = [Node(formula[lookahead]+'\r'*uniqueids)]
+			currentnode.extend(prednode)
+
 			match()
+			
+
 			if formula[lookahead] == "(":
 				match()
 				print(formula[lookahead], "is (, so match")
@@ -658,16 +695,34 @@ def predicateproc():
 
 				for j in range(int(currentarity)):
 					#iterate through the arity
-					if variableproc() == 1:
+					varresult, vardata = variableproc()
+					if varresult == 1:
+						
+						#add this to the node list
+						varthisnode = [Node(formula[lookahead]+ '\r'*uniqueids)]
+						#varthisnode = [Node(formula[lookahead])]
+						print("var node",varthisnode)
+						currentnode.extend(varthisnode)
 						match()
+
 					if formula[lookahead] == ",":
+						
 						match()
+
+				
+				print("predicate current node 1",currentnode)
+				#now make everything the child of the predicate name - which will be the parent in this case
+				for k in range(1,len(currentnode)):
+					currentnode[k].parent = currentnode[0]
+
+				print("predicate current node",currentnode)
 
 				if formula[lookahead] == ")":
 					#match()
+					#currentnode = [Node(formula[lookahead])]
 					found = True
 					print("Predicate match")
-					return 1
+					return 1,currentnode
 
 			else:
 				print(formula[lookahead],"is not (")
@@ -679,7 +734,7 @@ def predicateproc():
 
 
 	if found == False:
-		return 0
+		return 0,"nothing"
 
 def termequalityterm():
 
@@ -687,6 +742,8 @@ def termequalityterm():
 
 	global lookahead
 	treedata= []
+	global uniqueids
+
 	if formula[lookahead]=="(":
 				match()
 
@@ -703,141 +760,207 @@ def termequalityterm():
 							match()
 
 							if formula[lookahead]==")":
-								treedata.extend(equalitydata)
-								print(equalitydata)
-								treedata.extend(dataterm1)
-								print(dataterm1)
-								
-								treedata.extend(dataterm2)
-								print(dataterm2)
 
-							#make the terms children of equality
+
+								treedata.extend(equalitydata)
+							
+								treedata.extend(dataterm1)
+								treedata.extend(dataterm2)
+				
+								#make the terms children of equality
 								treedata[1].parent = treedata[0]
 								treedata[2].parent = treedata[0]
 
-
+								print("term equality term nodes")
+								print(treedata)
 								#match() #was commented out earlier
 								return 1,treedata
 							else:
 								#lookahead = 0
-								return 0
+								return 0,"nothing"
 						else:
 							#lookahead = 0
-							return 0
+							return 0,"nothing"
 					else:
 						#lookahead = 0
-						return 0
+						return 0,"nothing"
 				else:
 					#lookahead = 0
-					return 0
+					return 0,"nothing"
 	else:
 		#lookahead = 0
-		return 0
+		return 0,"nothing"
 
 
 def fcf():
 	global parentpointer
 
 	global lookahead
+	currentdata =[]
 
 	if formula[lookahead]=="(":
 		print("fcf: ( match",formula[lookahead])
 		match()
 
-		if formulaproc()==1:
+		formula1check, formula1data = formulaproc()
+		print("formula1data ",formula1data)
+		if formula1check==1:
 			print("fcf: formula match",formula[lookahead])
 			match()
 
-			if connectiveproc()==1:
+			connectivecheck, connectivedata = connectiveproc()
+			if connectivecheck==1:
 				print("fcf: connective match",formula[lookahead])
 				match()
 
-				if formulaproc()==1:
+				formula2check, formula2data = formulaproc()
+				print("formula2data",formula2data)
+				if formula2check==1:
 					print("fcf: formula match",formula[lookahead])
 					match()
 
 					if formula[lookahead]==")":
 						print("fcf: ) match",formula[lookahead])
-						#match()
-						return 1
+						#match()\
+						currentdata.extend(connectivedata)
+						#add the opening bracket
+						#global uniqueids
+						#opbrack = [Node('('+'\r'*uniqueids)]
+						# print("Open bracket")
+						# opbrack = [Node('(')]
+						# uniqueids += 1
+						# opbrack[0].parent = currentdata[0]
+						# print(opbrack)
+						# currentdata.extend(opbrack)
+
+						formula1data[0].parent = currentdata[0]
+						currentdata.extend(formula1data) 
+
+						#make the first element of formula2data the child of connective 
+
+						formula2data[0].parent = currentdata[0]
+						currentdata.extend(formula2data)
+
+						#closebrack = [Node(')'+'\r'*uniqueids)]
+						# print("Closed bracket")
+						# closebrack = [Node(')')]
+						# uniqueids += 1
+						# closebrack[0].parent = currentdata[0]
+						# print(closebrack)
+						# currentdata.extend(opbrack)
+
+						print("current data is ",currentdata)
+
+						#make the first element of formula1data the child of connective
+						#currentdata[1].parent = currentdata[0]
+
+
+						print("fcf")
+						print(currentdata)
+						print(currentdata[0])
+						print(currentdata[1])
+						print(currentdata[2])
+
+
+						return 1, currentdata
 					else:
 						print("fcf: NO ) match",formula[lookahead])
 						#lookahead =0 
-						return 0
+						return 0,"nothing"
 
 				else:
 					print("fcf: NO second formula match",formula[lookahead])
 					#lookahead = 0
-					return 0
+					return 0,"nothing"
 
 			else:
 				print("fcf: NO connective match",formula[lookahead])
 				#lookahead = 0
-				return 0
+				return 0,"nothing"
 
 		else:
 			print("fcf: NO first formula match",formula[lookahead])
 			#lookahead = 0
-			return 0
+			return 0,"nothing"
 	else:
 		print("fcf: NO ( match",formula[lookahead])
 		#lookahead = 0
-		return 0
+		return 0,"nothing"
 
 def qvf():
 	global parentpointer
 
 	global lookahead
 
-	if quantifierproc()==1:
+	currentdata=[]
+
+	checkquantifier, quantifierdata = quantifierproc()
+
+	if checkquantifier==1:
 		print("qvf: quantifier match",formula[lookahead])
 		match()
 
-		if variableproc()==1:
+		checkvariable, variabledata = variableproc()
+		if checkvariable==1:
 			print("qvf: variable match",formula[lookahead])
 			match()
 
-			if formulaproc()==1:
+			formulacheck, formuladata = formulaproc()
+			if formulacheck==1:
 				#print("qvf: formula match",formula[lookahead])
 				#match() #this was commented out earlier - match()
-				return 1
+				currentdata.extend(quantifierdata)
+				currentdata.extend(variabledata)
+				
+				currentdata.extend(formuladata)
+
+				currentdata[1].parent = currentdata[0]
+				currentdata[2].parent = currentdata[0]
+
+
+				return 1,currentdata
 
 			else:
 				print("qvf: formula NO match",formula[lookahead])
 				#lookahead =0
-				return 0
+				return 0,"nothing"
 
 		else:
 			print("qvf: variable NO match",formula[lookahead])
 			#lookahead =0
-			return 0
+			return 0,"nothing"
 
 	else:
 		print("qvf: quantifier NO match",formula[lookahead])
 		#lookahead =0
-		return 0
+		return 0,"nothing"
 
 
 def negformula():
 	global lookahead
 
 	global parentpointer
-
+	currentdata= []
 	#negation element should be used here
 	if formula[lookahead] ==negationelement:
 		print("Negformula: \\neg match",formula[lookahead])
 		match()
 
-		if formulaproc()==1:
-			return 1
+		formulacheck, formuladata = formulaproc()
+		if formulacheck==1:
+
+			currentdata.extend(negationelement)
+			currentdata.extend(formuladata)
+			return 1, currentdata
+
 
 		else:
-			return 0
+			return 0,"nothing"
 
 	else:
 		print("Negformula: \\neg NO match",formula[lookahead])
 		#lookahead = 0 
-		return 0
+		return 0,"nothing"
 
 
 
@@ -846,68 +969,74 @@ def formulaproc():
 
 	global lookahead
 	
+	currentdata=[]
 
 	#call fcf 
 	initlook = lookahead
 
 	print("Calling formula connective formula")
 
-	fcfresult = fcf()
+	fcfresult, fcfdata = fcf()
 	if fcfresult == 0:
+
 		print(" formula connective formula result is 0 ")
 
 		lookahead = initlook
 
-
 		#call qvf
 		print("Calling quantifier variable formula")
-		qvfresult = qvf()
+		qvfresult, qvfdata = qvf()
 		if qvfresult == 0:
 			print("Quantifer variable formula result is 0")
 
 			lookahead = initlook
 
 			print("Calling neg formula")
-			negresult = negformula()
+			negresult, negdata = negformula()
 			if negresult == 0:
 				print("Neg formula result is 0")
 
 				lookahead = initlook
 
 				print("callinf predicate formula")
-				predresult = predicateproc()
+				predresult, preddata = predicateproc()
 
 				if predresult == 0:
 					print("predicate result is 0")
 					lookahead = initlook
 
 					print("calling term equality term function")
-					tetresult = termequalityterm()
+					tetresult, tetdata = termequalityterm()
 
 					if tetresult == 0:
 						print("term equality term result is 0")
 						print("not a valid formula")
-						return 0
+						return 0,"invalid"
 
 					else:
-
+						currentdata.extend(tetdata)
 
 						print("formula is term equality term")
-						return 1
+						return 1, currentdata
 
 				else:
+					currentdata.extend(preddata)
 					print("formula is predicate")
-					return 1
+					return 1, currentdata
 			else:
-
+				print('hello')
+				print(negdata)
+				currentdata.extend(negdata)
 				print("formula is neg formula")
-				return 1
+				return 1, currentdata
 		else:
+			currentdata.extend(qvfdata)
 			print("formula is quantifier variable formula")
-			return 1
+			return 1, currentdata
 	else:
+		currentdata.extend(fcfdata)
 		print("formula is fcf")
-		return 1
+		return 1, currentdata
 
 
 lookahead = 0
@@ -915,11 +1044,14 @@ lookahead = 0
 
 #make the graph
 
-result,data = termequalityterm()
+#result,data = termequalityterm()
 
 
 #DotExporter(Start).dot_dotfile("graph.dot")
-DotExporter(data[0]).to_picture("test2.png")
+#DotExporter(data[0]).to_picture("test2.png")
 
+result, data = formulaproc()
+DotExporter(data[0]).to_picture("test4.png")
 
-
+# DotExporter(data[0]).to_dotfile("graph.dot")
+# check_call(['dot','-Tpng','graph.dot','-o','test3.png'])
