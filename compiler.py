@@ -3,10 +3,13 @@ import string
 import re
 from anytree import Node, RenderTree
 from anytree.exporter import DotExporter
+import sys
 ########################################## Read the input ########################################
 f = open("Errors.log","w")
 #store the file in a list, with each new line as a new element
-lines = list(open("example.txt"))
+#print(sys.argv)
+lines = list(open(sys.argv[1]))
+#lines = list(open("example.txt"))
 validsets = ["variables:","constants:","predicates:","equality:","connectives:","quantifiers:"]
 productiondict={}
 i=0
@@ -96,6 +99,7 @@ constants = constants.split(' ')
 
 predicates = predicates.strip()
 predicates = predicates.split(' ')
+
 #print("predicates =", predicates)
 
 equality = equality.strip()
@@ -138,14 +142,51 @@ for i in range(len(formula)):
 		s=[s.strip() for s in  re.split(r'([\(\),])', s.strip()) if s]
 		#print("S is ",s)
 		newformula.extend(s)
-#print("new formula is",newformula)
 
-print("Set of terminals: ",end =" ")
+print("new formula is",newformula)
+grammar = open("grammar.txt","w")
+
+grammar.write("Set of terminals: \n")
 
 #terminals = connectives + variables + constants + predicates + equality + ['(',')',',']
-print(variables + constants + connectives + quantifiers + equality + predicates + ['(',')',','])
+for item in variables:
+	grammar.write("%s " % item)
+grammar.write('\n')
 
-print("Set of non-terminals: start, variable, constant, equality, connectives, quantifiers, term, predicate, formula\n")
+
+for item in constants:
+	grammar.write("%s " % item)
+grammar.write('\n')
+
+
+for item in connectives:
+	grammar.write("%s " % item)
+grammar.write('\n')
+
+
+for item in quantifiers:
+	grammar.write("%s " % item)
+grammar.write('\n')
+
+
+for item in equality:
+	grammar.write("%s " % item)
+grammar.write('\n')
+
+
+for item in predicates:
+	grammar.write("%s " % item)
+grammar.write('\n')
+
+grammar.write('( ) ,')
+
+grammar.write('\n')
+
+
+#grammar.write(variables + constants + connectives + quantifiers + equality + predicates + ['(',')',','])
+grammar.write('\n')
+grammar.write("Set of non-terminals: start, variable, constant, equality, connectives, quantifiers, term, predicate, formula\n")
+grammar.write('\n')
 #iterate through formula and split the 
 
 #check whether constants, predicates and variables all have different names
@@ -166,7 +207,9 @@ validname="0123456789_"
 
 #define the start symbol
 #print("start -> formula | formula start | NULL ")
-print("start -> formula")
+grammar.write("start -> formula")
+grammar.write('\n')
+
 #store the start symbol
 #startlist = ['formula','start + formula','NULL']
 startlist = ['formula']
@@ -176,7 +219,7 @@ print('\n')
 
 
 #define the production for 'variables'
-print("variable ->", end = " ")
+grammar.write("variable ->")
 for i in range(len(variables)):
 	#check whether the variable name consists of only alphanumeric characters and underscore
 	currentvariable = variables[i]
@@ -188,19 +231,19 @@ for i in range(len(variables)):
 			f.write("ERROR in input file: incorrect variable name, must only contain alphanumeric characters and underscore\n")
 			sys.exit()
 	if i==0:
-		print(currentvariable, end=" ")
+		grammar.write(currentvariable)
 		continue
 
-	print("|",currentvariable, end=" ")
+	grammar.write("|"+ currentvariable)
 
-print('\n')
+grammar.write('\n')
 
 #store it in the dict 
 productiondict['variables']=variables
 
 
 #define the production for constants
-print("constant ->", end = " ")
+grammar.write("constant ->")
 for i in range(len(constants)):
 	currentconstant = constants[i]
 
@@ -213,12 +256,12 @@ for i in range(len(constants)):
 			sys.exit()
 
 	if i==0:
-		print(constants[i], end=" ")
+		grammar.write(constants[i])
 		continue
 
 
-	print("|",constants[i], end=" ")
-print('\n')
+	grammar.write("|"+constants[i])
+grammar.write('\n')
 
 #store it in the dict
 productiondict['constants']=constants
@@ -227,7 +270,7 @@ productiondict['constants']=constants
 
 
 #define the production for equality
-print("equality ->", end = " ")
+grammar.write("equality ->")
 if len(equality)!=1:
 	f.write("ERROR in input file: Equality set is not equal to size 1\n")
 	sys.exit()
@@ -243,19 +286,19 @@ for i in range(len(equality)):
 			sys.exit()
 
 	if i==0:
-		print(equality[i], end=" ")
+		grammar.write(equality[i])
 		continue
 
 
-	print("|",equality[i], end=" ")
-print('\n')
+	grammar.write("|"+equality[i])
+grammar.write('\n')
 
 #store it in the dict
 productiondict['equality']=equality
 
 
 #define the production for connectives
-print("connectives ->", end = " ")
+grammar.write("connectives ->")
 #check that the connectives are a set of 5
 if len(connectives)!=5:
 	f.write("ERROR in input file: connectives set is not of size 5\n")
@@ -281,21 +324,21 @@ for i in range(len(connectives)):
 			sys.exit()
 
 	if i==0:
-		print(currentconnective, end=" ")
+		grammar.write(currentconnective)
 		continue
 
 
-	print("|",currentconnective, end=" ")
-print('\n')
+	grammar.write("|"+currentconnective)
+grammar.write('\n')
 
 #store it in the dict
 productiondict['connectives']=connectives
 
 
 #define the production for quantifiers
-print("quantifiers ->", end = " ")
+grammar.write("quantifiers ->")
 if len(quantifiers)!=2:
-	print("quantifiers set is not of size 2")
+	f.write("ERROR in input file: quantifiers set is not of size 2")
 	sys.exit()
 for i in range(len(quantifiers)):
 	currentquantifier = quantifiers[i]
@@ -308,12 +351,12 @@ for i in range(len(quantifiers)):
 			sys.exit()
 
 	if i==0:
-		print(currentquantifier, end=" ")
+		#print(currentquantifier)
 		continue
 
 
-	print("|",currentquantifier, end=" ")
-print('\n')
+	grammar.write("|"+currentquantifier)
+grammar.write('\n')
 
 #store it in the dict
 productiondict['quantifiers']=quantifiers
@@ -325,7 +368,7 @@ formulaproductions =[]
 #make the four rules + others in the spec for formulas
 
 #define the term production rule
-print("term -> variable | constant\n")
+grammar.write("term -> variable | constant\n")
 termlist=['variable','constant']
 productiondict['terms'] = termlist
 
@@ -333,7 +376,7 @@ productiondict['terms'] = termlist
 
 
 
-print("predicate -> ",end=" ")
+grammar.write("predicate -> ")
 
 
 #define the production for predicates
@@ -342,9 +385,10 @@ predicatenames = []
 predicatearity = []
 for i in range(len(predicates)):
 	currentpredicate = predicates[i] 
+	print(currentpredicate)
 
 	#check to see whether the predicate satisfies the minimum length: 4
-	if len(currentpredicate)<4:
+	if (lencurrentlen(currentpredicate)<4):
 		f.write("ERROR in input file: predicate does not satisfy minimum length of 4\n")
 		sys.exit()
 
@@ -377,7 +421,7 @@ for i in range(len(predicates)):
 		else:
 			f.write("ERROR in input file: predicate name character is not alphanumeric or an underscore\n")
 			sys.exit()
-
+	print(predicatename)
 	predicatenames.append(predicatename)
 
 	arity=""
@@ -390,6 +434,7 @@ for i in range(len(predicates)):
 		else:
 			f.write("ERROR in input file: arity is not numeric\n")
 			sys.exit()
+	
 	predicatearity.append(arity)
 
 	#check whether the predicate names are the same as any of the variable names
@@ -401,48 +446,67 @@ for i in range(len(predicates)):
 		sys.exit()
 
 	predicatestring = predicatename	#supposed to be like P[variables,variables]
-
 	predicatestring = predicatename+"("
-
 	#print the production for predicates
 	#we check for i=0 in order to get the proper formatting with | symbol
-	if i==0:
+	if i==0 and len(predicates)!=1:
 
 		#predicate name and opening bracket
-		print(predicatename+"(",end="")
+		grammar.write(predicatename+"(")
 		#'variable' repeated arity times 
 		for i in range(int(arity)-1):
-			print("variable, ",end="")
+			grammar.write("variable, ")
 
 			#append to predicatestring
 			predicatestring = predicatestring + "variable,"
 
 		predicatestring = predicatestring +"variable)"
 		predicatelist.append(predicatestring)
-		print("variable)",end=" ")
+		grammar.write("variable)")
 
 		continue
 
+	if i == 0 and len(predicates)==1:
+		grammar.write("|"+predicatename+"(")
 
-	print("|",predicatename+"(",end="")
+
+		for j in range(int(arity)-1):
+			grammar.write("variable, ")
+
+			#append to predicatestring
+			predicatestring = predicatestring + "variable,"
+
+		predicatestring = predicatestring + "variable)"
+		predicatelist.append(predicatestring)
+		grammar.write("variable)")
+		productiondict['predicate']=predicatelist
+		productiondict['predicatenames'] = predicatenames
+		productiondict['predicatearity'] = predicatearity
+
+
+
+	grammar.write("|"+predicatename+"(")
 
 	#'variable' repeated arity times 
-	for i in range(int(arity)-1):
-		print("variable, ",end="")
+	for j in range(int(arity)-1):
+		grammar.write("variable, ")
 
 		#append to predicatestring
-		predicatestring = predicatestring + "variable"
+		predicatestring = predicatestring + "variable,"
 
 	predicatestring = predicatestring + "variable)"
 	predicatelist.append(predicatestring)
-	print("variable)",end=" ")
+	grammar.write("variable)")
 
 	productiondict['predicate']=predicatelist
 	productiondict['predicatenames'] = predicatenames
 	productiondict['predicatearity'] = predicatearity
 
 
-print('\n')
+
+
+
+grammar.write('\n')
 
 
 
@@ -454,7 +518,7 @@ print('\n')
 
 #define rule 2 (C = D), (C = x), (x = C) and (x = y) are valid
 
-print("formula -> (term equality term) |",end=" ")
+grammar.write("formula -> (term equality term) |")
 #get the equality set
 equals = productiondict['equality']
 rule2 = ['(','term','equality','term',')']
@@ -464,7 +528,7 @@ formulaproductions.append(rule2)
 
 
 #define formula connective formula
-print('(formula connective formula)',end=" ")
+grammar.write('(formula connective formula)')
 
 connectiveset = productiondict['connectives']
 rule3 = ['(','formula','connectives','formula',')']
@@ -476,7 +540,7 @@ formulaproductions.append(rule3)
 
 
 #define quantifier variable formula
-print('| quantifier variable formula',end=" ")
+grammar.write('| quantifier variable formula')
 quantifierset = productiondict['quantifiers']
 varset = productiondict['variables']
 
@@ -487,17 +551,17 @@ formulaproductions.append(rule4)
 
 
 #add the negation formula element
-print("| ",negationelement,"formula",end=" ")
+grammar.write("| "+negationelement+"formula")
 negationlist = ['(',negationelement,'formula']
 formulaproductions.append(negationlist)
 
 
 
 #add predicate to formulaproductions
-print("| predicate")
-print('\n')
+grammar.write("| predicate")
+grammar.write('\n')
 formulaproductions.append(['predicate'])
-print("\n")
+grammar.write("\n")
 #add formulaproductions to the dict
 productiondict['formula']=formulaproductions
 #print("dict is ", productiondict)
@@ -514,7 +578,6 @@ formula = newformula
 #lookahead = 0
 # #define match procedure (this will be executed if the current token is a terminal)
 # #can build the tree here in the same go
-global parentpointer
 
 uniqueids = 0
 
@@ -537,7 +600,6 @@ def start():
 
 
 def variableproc():
-	global parentpointer
 
 	global lookahead
 	#access the variable dict
@@ -551,13 +613,12 @@ def variableproc():
 		uniqueids +=1
 		return 1,currentnode
 	else:
-		# f.write('ERROR in validation: '+formula[lookahead]+' did not match a variable\n')
+		#f.write('ERROR in validation: '+formula[lookahead]+' did not match a variable\n')
 		# sys.exit()
 		#print(formula[lookahead],"is not a variable")
 		return 0,"nothing"
 
 def constantproc():
-	global parentpointer
 
 	global lookahead
 	#access the constant dict
@@ -630,7 +691,6 @@ def equalityproc():
 
 def connectiveproc():
 	global lookahead
-	global parentpointer
 	#access the connectives rule
 	connectivesrule = productiondict['connectives']
 	#print("Connectives",connectivesrule)
@@ -652,7 +712,7 @@ def connectiveproc():
 
 def quantifierproc():
 	global lookahead
-	global parentpointer
+	
 	#access the quantifier rule
 	quantifiersrule = productiondict['quantifiers']
 
@@ -672,21 +732,23 @@ def quantifierproc():
 
 
 def predicateproc():
-	global parentpointer
 	currentnode =[]
 	global lookahead
 	global uniqueids
 	#access the predicate rules
 	predicaterules = productiondict['predicate']
+	print(predicaterules)
 	names = productiondict['predicatenames']
+	print('predicate names ',predicatenames)
 	aritylist = productiondict['predicatearity']
+	print('arity list ',aritylist)
 
 	found = False
 	for i in range(len(predicaterules)):
-
-		#print("formula lookahead is ",formula[lookahead])
 		if formula[lookahead] in names:
-			#print(formula[lookahead]," in names list, so match")
+			currentpredicatename = formula[lookahead]
+
+			print(formula[lookahead]," in names list, so match")
 			prednode = [Node(formula[lookahead]+'\r'*uniqueids)]
 			currentnode.extend(prednode)
 
@@ -694,14 +756,21 @@ def predicateproc():
 			
 
 			if formula[lookahead] == "(":
+				print('open brack')
 				match()
 				#print(formula[lookahead], "is (, so match")
+				#get the arity corresponding to the predicatename, use index
+				print(currentpredicatename)
+				indextouse = names.index(currentpredicatename)
+				print(indextouse)
 
-				currentarity = aritylist[i]
+				currentarity = aritylist[indextouse]
+
 
 				#print("Current arity is ",currentarity)
-
+				print(currentarity)
 				for j in range(int(currentarity)):
+					print("here")
 					#iterate through the arity
 					varresult, vardata = variableproc()
 					if varresult == 1:
@@ -753,7 +822,6 @@ def predicateproc():
 
 def termequalityterm():
 
-	global parentpointer
 
 	global lookahead
 	treedata= []
@@ -808,7 +876,6 @@ def termequalityterm():
 
 
 def fcf():
-	global parentpointer
 
 	global lookahead
 	currentdata =[]
@@ -887,7 +954,6 @@ def fcf():
 		return 0,"nothing"
 
 def qvf():
-	global parentpointer
 
 	global lookahead
 
@@ -938,7 +1004,6 @@ def qvf():
 def negformula():
 	global lookahead
 
-	global parentpointer
 	currentdata= []
 	#negation element should be used here
 	if formula[lookahead] ==negationelement:
@@ -966,7 +1031,6 @@ def negformula():
 
 
 def formulaproc():
-	global parentpointer
 
 	global lookahead
 	
@@ -999,7 +1063,7 @@ def formulaproc():
 
 				lookahead = initlook
 
-				#print("callinf predicate formula")
+				print("callinf predicate formula")
 				predresult, preddata = predicateproc()
 
 				if predresult == 0:
@@ -1018,6 +1082,7 @@ def formulaproc():
 						return 0,"invalid"
 
 					else:
+
 						#check that the lookahead = len(formula), this will account for weird inputs with extra brackets and all
 						currentdata.extend(tetdata)
 
@@ -1057,8 +1122,21 @@ lookahead = 0
 #DotExporter(data[0]).to_picture("test2.png")
 try:
 	result, data = formulaproc()
-	DotExporter(data[0]).to_picture("parsetree.png")
-	f.write("Passed Validation: Formula is valid")
+	if result == 1:
+		#check whether the lookahead is equal to len f
+		print("lookahead is",lookahead)
+		print("length of formula",len(formula))
+		if lookahead == len(formula)-1:
+			DotExporter(data[0]).to_picture("parsetree.png")
+			f.write("Passed Validation: Formula is valid\n")
+		else:
+			f.write("Validation Error: Invalid information to the right of " + formula[lookahead]+"\n")
+	else:
+
+		f.write("ERROR in validation: Input formula cannot be produced with (term equality term), (formula connective formula), quantifier variable formula, negation formula or predicate \n")
+		f.write("Therefore, this is an invalid input formula\n")
+
+
 except:
 	f.write("ERROR in validation: Input formula cannot be produced with (term equality term), (formula connective formula), quantifier variable formula, negation formula or predicate \n")
 	f.write("Therefore, this is an invalid input formula\n")
