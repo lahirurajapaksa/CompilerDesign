@@ -87,20 +87,20 @@ while i<(len(lines)):
 #the data that involves elements with a \, will automatically be stored with a \\
 variables = variables.strip()
 variables = variables.split(' ')
-print("variables =", variables)
+#print("variables =", variables)
 
 constants = constants.strip()
 constants = constants.split(' ')
-print("constants =", constants)
+#print("constants =", constants)
 
 
 predicates = predicates.strip()
 predicates = predicates.split(' ')
-print("predicates =", predicates)
+#print("predicates =", predicates)
 
 equality = equality.strip()
 equality = equality.split(' ')
-print("equality =", equality)
+#print("equality =", equality)
 #check whether nothing is given
 if equality[0]=="":
 	f.write("ERROR in input file: equality is blank, must be cardinality of 1\n")
@@ -108,19 +108,19 @@ if equality[0]=="":
 
 connectives = connectives.strip()
 connectives = connectives.split(' ')
-print("connectives =", connectives)
+#print("connectives =", connectives)
 
 
 quantifiers = quantifiers.strip()
 quantifiers = quantifiers.split(' ')
-print("quantifiers =", quantifiers)
+#print("quantifiers =", quantifiers)
 
 #print("String here")
-print(formula)
+#print(formula)
 formula = formula.strip()
 formula = formula.split(' ')
-print("formula =", formula)
-print('\n')
+#print("formula =", formula)
+#print('\n')
 newformula=[]
 for i in range(len(formula)):
 	# r = re.compile('|'.join([re.escape(w) for w in connectives]), flags=re.I)
@@ -138,11 +138,12 @@ for i in range(len(formula)):
 		s=[s.strip() for s in  re.split(r'([\(\),])', s.strip()) if s]
 		#print("S is ",s)
 		newformula.extend(s)
-print("new formula is",newformula)
+#print("new formula is",newformula)
 
 print("Set of terminals: ",end =" ")
 
-
+#terminals = connectives + variables + constants + predicates + equality + ['(',')',',']
+print(variables + constants + connectives + quantifiers + equality + predicates + ['(',')',','])
 
 print("Set of non-terminals: start, variable, constant, equality, connectives, quantifiers, term, predicate, formula\n")
 #iterate through formula and split the 
@@ -499,7 +500,7 @@ formulaproductions.append(['predicate'])
 print("\n")
 #add formulaproductions to the dict
 productiondict['formula']=formulaproductions
-print("dict is ", productiondict)
+#print("dict is ", productiondict)
 
 
 #recursive descent parser
@@ -728,7 +729,7 @@ def predicateproc():
 					#match()
 					#currentnode = [Node(formula[lookahead])]
 					found = True
-					print("Predicate match")
+					#print("Predicate match")
 					return 1,currentnode
 				# else:
 				# 	f.write('ERROR in validation: '+formula[lookahead]+' did not match the closing bracket of predicate\n')
@@ -837,7 +838,6 @@ def fcf():
 						#print("fcf: ) match",formula[lookahead])
 						#match()\
 						currentdata.extend(connectivedata)
-						#add the opening bracket
 
 						formula1data[0].parent = currentdata[0]
 						currentdata.extend(formula1data) 
@@ -980,72 +980,68 @@ def formulaproc():
 	fcfresult, fcfdata = fcf()
 	if fcfresult == 0:
 
-		print(" formula connective formula result is 0 ")
+		#print(" formula connective formula result is 0 ")
 
 		lookahead = initlook
 
 		#call qvf
-		print("Calling quantifier variable formula")
+		#print("Calling quantifier variable formula")
 		qvfresult, qvfdata = qvf()
 		if qvfresult == 0:
-			print("Quantifer variable formula result is 0")
+			#print("Quantifer variable formula result is 0")
 
 			lookahead = initlook
 
-			print("Calling neg formula")
+			#print("Calling neg formula")
 			negresult, negdata = negformula()
 			if negresult == 0:
-				print("Neg formula result is 0")
+				#print("Neg formula result is 0")
 
 				lookahead = initlook
 
-				print("callinf predicate formula")
+				#print("callinf predicate formula")
 				predresult, preddata = predicateproc()
 
 				if predresult == 0:
-					print("predicate result is 0")
+					#print("predicate result is 0")
 					lookahead = initlook
 
-					print("calling term equality term function")
+					#print("calling term equality term function")
 					tetresult, tetdata = termequalityterm()
 
 					if tetresult == 0:
-						print("term equality term result is 0")
-						print("not a valid formula")
-						f.write("ERROR in validation: Input formula cannot be produced with (term equality term), (formula connective formula), quantifier variable formula, negation formula or predicate \n")
-						f.write("Therefore, this is an invalid input formula\n")
-						sys.exit()
+						#print("term equality term result is 0")
+						#print("not a valid formula")
+						#f.write("ERROR in validation: Input formula cannot be produced with (term equality term), (formula connective formula), quantifier variable formula, negation formula or predicate \n")
+						#f.write("Therefore, this is an invalid input formula\n")
+						
 						return 0,"invalid"
 
 					else:
 						#check that the lookahead = len(formula), this will account for weird inputs with extra brackets and all
 						currentdata.extend(tetdata)
 
-						print("formula is term equality term")
-						f.write("Passed validation: The formula is valid\n")
+						#print("formula is term equality term")
 						return 1, currentdata
 
 				else:
 					currentdata.extend(preddata)
-					print("formula is predicate")
-					f.write("Passed validation: The formula is valid\n")
+					#print("formula is predicate")
 					return 1, currentdata
 			else:
 				# print('hello')
 				# print(negdata)
 				currentdata.extend(negdata)
-				print("formula is neg formula")
-				f.write("Passed validation: The formula is valid\n")
+				#print("formula is neg formula")
 				return 1, currentdata
 		else:
 			currentdata.extend(qvfdata)
-			print("formula is quantifier variable formula")
-			f.write("Passed validation: The formula is valid\n")
+			#print("formula is quantifier variable formula")
 			return 1, currentdata
 	else:
 		currentdata.extend(fcfdata)
-		print("formula is fcf")
-		f.write("Passed validation: The formula is valid\n")
+		#print("formula is fcf")
+	
 		return 1, currentdata
 
 
@@ -1059,9 +1055,14 @@ lookahead = 0
 
 #DotExporter(Start).dot_dotfile("graph.dot")
 #DotExporter(data[0]).to_picture("test2.png")
+try:
+	result, data = formulaproc()
+	DotExporter(data[0]).to_picture("parsetree.png")
+	f.write("Passed Validation: Formula is valid")
+except:
+	f.write("ERROR in validation: Input formula cannot be produced with (term equality term), (formula connective formula), quantifier variable formula, negation formula or predicate \n")
+	f.write("Therefore, this is an invalid input formula\n")
 
-result, data = formulaproc()
-DotExporter(data[0]).to_picture("test4.png")
 
 # DotExporter(data[0]).to_dotfile("graph.dot")
 # check_call(['dot','-Tpng','graph.dot','-o','test3.png'])
