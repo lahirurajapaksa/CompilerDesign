@@ -4,9 +4,9 @@ import re
 from anytree import Node, RenderTree
 from anytree.exporter import DotExporter
 ########################################## Read the input ########################################
-
+f = open("Errors.log","w")
 #store the file in a list, with each new line as a new element
-lines = list(open("example2.txt"))
+lines = list(open("example.txt"))
 validsets = ["variables:","constants:","predicates:","equality:","connectives:","quantifiers:"]
 productiondict={}
 i=0
@@ -15,14 +15,14 @@ while i<(len(lines)):
 	formulaFound=False
 
 	currentline = lines[i]
-	print(currentline)
+	#print(currentline)
 	#strip the line of whitespace and trailing newline char
 	currentline.strip()
 	currentline = currentline.strip('\n')
 	currentline = currentline.strip('\t')
 
 	currentline=' '.join(currentline.split())
-	print("AFTer",currentline)
+	#print("AFTer",currentline)
 
 
 	 #split the line based on the colon
@@ -55,7 +55,7 @@ while i<(len(lines)):
 	#add the current line's data
 		formula=colonSplit[1]
 	else:
-		print("invalid maate")
+		f.write("ERROR in input file: invalid tag used, can only be variables, constants, predicates, equality, connectives, quantifiers or formula\n")
 		sys.exit()
 
 	#use a while loop
@@ -103,7 +103,7 @@ equality = equality.split(' ')
 print("equality =", equality)
 #check whether nothing is given
 if equality[0]=="":
-	print("equality is blank")
+	f.write("ERROR in input file: equality is blank, must be cardinality of 1\n")
 	sys.exit()
 
 connectives = connectives.strip()
@@ -115,7 +115,7 @@ quantifiers = quantifiers.strip()
 quantifiers = quantifiers.split(' ')
 print("quantifiers =", quantifiers)
 
-print("String here")
+#print("String here")
 print(formula)
 formula = formula.strip()
 formula = formula.split(' ')
@@ -130,12 +130,6 @@ for i in range(len(formula)):
 		#print("just append, DO NOT MAP", formula[i])
 		newformula.append(formula[i])
 	
-	# elif (len(check)>0):
-	# 	print("check is ",check)
-	# 	if (check[0] in connectives):
-	# 		print(" CONNECTIVE !!!just append, DO NOT MAP", formula[i])
-	# 		print(r.findall(formula[i]))
-	# 		newformula.append(check[0])
 	else:
 		#print("MAP THIS!",formula[i])
 		# formula[i] = list(map(str,formula[i]))
@@ -146,13 +140,18 @@ for i in range(len(formula)):
 		newformula.extend(s)
 print("new formula is",newformula)
 
+print("Set of terminals: ",end =" ")
+
+
+
+print("Set of non-terminals: start, variable, constant, equality, connectives, quantifiers, term, predicate, formula\n")
 #iterate through formula and split the 
 
 #check whether constants, predicates and variables all have different names
 check = any(item in variables for item in constants)
 
 if check == True:
-	print("Variables and constants cant be the same")
+	f.write("ERROR in input file: Variables and constants cant be the same\n")
 	sys.exit()
 
 
@@ -185,7 +184,7 @@ for i in range(len(variables)):
 			continue
 		else:
 			print("\n")
-			print("incorrect variable name, must only contain alphanumeric characters and underscore")
+			f.write("ERROR in input file: incorrect variable name, must only contain alphanumeric characters and underscore\n")
 			sys.exit()
 	if i==0:
 		print(currentvariable, end=" ")
@@ -200,7 +199,7 @@ productiondict['variables']=variables
 
 
 #define the production for constants
-print("constants ->", end = " ")
+print("constant ->", end = " ")
 for i in range(len(constants)):
 	currentconstant = constants[i]
 
@@ -209,7 +208,7 @@ for i in range(len(constants)):
 			continue
 		else:
 			print("\n")
-			print("incorrect constant name, must only contain alphanumeric characters and underscore")
+			f.write("ERROR in input file: incorrect constant name, must only contain alphanumeric characters and underscore\n")
 			sys.exit()
 
 	if i==0:
@@ -229,18 +228,17 @@ productiondict['constants']=constants
 #define the production for equality
 print("equality ->", end = " ")
 if len(equality)!=1:
-	print("Equality set is not equal to size 1")
+	f.write("ERROR in input file: Equality set is not equal to size 1\n")
 	sys.exit()
 for i in range(len(equality)):
 	currentequality = equality[i]
 
 	for j in range(len(currentequality)):
-		if (currentequality[j].isalpha()==True) or (currentequality[j] in validname) or (currentequality[j]=="="):
+		if (currentequality[j].isalpha()==True) or (currentequality[j] in validname) or (currentequality[j]=="=") or (currentequality[j]=="\\"):
 			continue
 			
 		else:
-			print("\n")
-			print("incorrect equality used, must be alphanumeric or =")
+			f.write("ERROR in input file: incorrect equality used, must be alphanumeric, = or \\ \n")
 			sys.exit()
 
 	if i==0:
@@ -259,7 +257,7 @@ productiondict['equality']=equality
 print("connectives ->", end = " ")
 #check that the connectives are a set of 5
 if len(connectives)!=5:
-	print("connectives set is not of size 5")
+	f.write("ERROR in input file: connectives set is not of size 5\n")
 	sys.exit()
 
 #remove the last negation element from the connectives set and store it in a variable
@@ -278,8 +276,7 @@ for i in range(len(connectives)):
 		if (currentconnective[j].isalpha()==True) or (currentconnective[j] in validname) or(currentconnective[j]=="\\"):
 			continue
 		else:
-			print("\n")
-			print("incorrect connective name used, must contain alphanumeric characters or _")
+			f.write("ERROR in input file: incorrect connective name used, must contain alphanumeric characters, underscore or \\ \n")
 			sys.exit()
 
 	if i==0:
@@ -306,8 +303,7 @@ for i in range(len(quantifiers)):
 		if (currentquantifier[j].isalpha()==True) or (currentquantifier[j] in validname) or (currentquantifier[j]=="\\"):
 			continue
 		else:
-			print("\n")
-			print("incorrect quantifier name used, must be alphanumeric or _")
+			f.write("ERROR in input file: incorrect quantifier name used, must be alphanumeric, underscore or \\ \n")
 			sys.exit()
 
 	if i==0:
@@ -348,16 +344,16 @@ for i in range(len(predicates)):
 
 	#check to see whether the predicate satisfies the minimum length: 4
 	if len(currentpredicate)<4:
-		print("predicate does not satisfy minimum length of 4")
+		f.write("ERROR in input file: predicate does not satisfy minimum length of 4\n")
 		sys.exit()
 
 	#check if the last element is a closing bracket
 	if currentpredicate[-1]!="]":
-		print("the predicate format is incorrect, last character should be a closing bracket")
+		f.write("ERROR in input file: the predicate format is incorrect, last character should be a closing bracket\n")
 		sys.exit()
 	#check if there is an opening bracket
 	elif "[" not in currentpredicate:
-		print("the predicate format is incorrect, should have a opening bracket")
+		f.write("ERROR in input file: the predicate format is incorrect, should have a opening bracket\n")
 		sys.exit()
 
 	#check whether the open and closed bracket occur only once
@@ -365,7 +361,7 @@ for i in range(len(predicates)):
 	closedcount = currentpredicate.count(']')
 
 	if ((opencount!=1) or (closedcount!=1)):
-		print("too many brackets")
+		f.write("ERROR in input file: predicate has too many brackets\n")
 		sys.exit()
 
 	predicatename=""
@@ -378,7 +374,7 @@ for i in range(len(predicates)):
 			openingbrackindex = j
 			break
 		else:
-			print("character is not alphanumeric or an underscore")
+			f.write("ERROR in input file: predicate name character is not alphanumeric or an underscore\n")
 			sys.exit()
 
 	predicatenames.append(predicatename)
@@ -391,16 +387,16 @@ for i in range(len(predicates)):
 			arity=arity+currentpredicate[k]
 			continue
 		else:
-			print("arity is not numeric")
+			f.write("ERROR in input file: arity is not numeric\n")
 			sys.exit()
 	predicatearity.append(arity)
 
 	#check whether the predicate names are the same as any of the variable names
 	if predicatename in variables:
-		print("predicate name is the same as a variable name")
+		f.write("ERROR in input file: predicate name cannot be the same as a variable name\n")
 		sys.exit()
 	elif predicatename in constants:
-		print("predicate name is the same as a constant name")
+		f.write("ERROR in input file: predicate name cannot be the same as a constant name\n")
 		sys.exit()
 
 	predicatestring = predicatename	#supposed to be like P[variables,variables]
@@ -479,7 +475,7 @@ formulaproductions.append(rule3)
 
 
 #define quantifier variable formula
-print('| quantifier variable formula|',end=" ")
+print('| quantifier variable formula',end=" ")
 quantifierset = productiondict['quantifiers']
 varset = productiondict['variables']
 
@@ -547,15 +543,16 @@ def variableproc():
 	variablerules = productiondict['variables']
 
 	if formula[lookahead] in variablerules:
-		print("variable match")
+		#print("variable match")
 		global uniqueids
 		currentnode = [Node(formula[lookahead] + "\r"*uniqueids)]
 		
 		uniqueids +=1
 		return 1,currentnode
 	else:
-		print('Error in variable function: Variable did not match')
-		print(formula[lookahead],"is not a variable")
+		# f.write('ERROR in validation: '+formula[lookahead]+' did not match a variable\n')
+		# sys.exit()
+		#print(formula[lookahead],"is not a variable")
 		return 0,"nothing"
 
 def constantproc():
@@ -566,15 +563,17 @@ def constantproc():
 	constantrules = productiondict['constants']
 
 	if formula[lookahead] in constantrules:
-		print('constant match')
+		#print('constant match')
 		global uniqueids
 		currentnode = [Node(formula[lookahead]+ "\r"*uniqueids)]
 		
 		uniqueids +=1
 		return 1,currentnode
 	else:
-		print("Error in constant function: Constant did not match")
-		print(formula[lookahead],"is not a constant")
+		# f.write('ERROR in validation: '+formula[lookahead]+' did not match a constant\n')
+		# sys.exit()
+		#print("Error in constant function: Constant did not match")
+		#print(formula[lookahead],"is not a constant")
 		return 0,"nothing"
 
 
@@ -589,14 +588,16 @@ def termproc():
 	constresult, constdata = constantproc()
 
 	if (varresult==1 or constresult==1):
-		print('term match')
+		#print('term match')
 		global uniqueids
 		currentnode = [Node(formula[lookahead]+ "\r"*uniqueids)] 
 		
 		uniqueids +=1
 		return 1,currentnode
 	else:
-		print('term did not match',formula[lookahead])
+		# f.write('ERROR in validation: '+formula[lookahead]+' did not match a term\n')
+		# sys.exit()
+		#print('term did not match',formula[lookahead])
 		notthere = "nothing"
 		return 0,notthere
 
@@ -608,7 +609,7 @@ def equalityproc():
 	equalityrule = productiondict['equality']
 
 	if formula[lookahead] == equalityrule[0]:
-		print("equality rule match")
+		#print("equality rule match")
 		global uniqueids
 		currentnode = [Node(formula[lookahead]+ "\r"*uniqueids)]
 		
@@ -618,8 +619,10 @@ def equalityproc():
 
 
 	else:
-		print("ERROR in equality function: equality does not match")
-		print(formula[lookahead],"is not an equality")
+		# f.write('ERROR in validation: '+formula[lookahead]+' did not match the equality symbol\n')
+		# sys.exit()
+		#print("ERROR in equality function: equality does not match")
+		#print(formula[lookahead],"is not an equality")
 		notthere = "nothing"
 		return 0,notthere
 
@@ -629,17 +632,19 @@ def connectiveproc():
 	global parentpointer
 	#access the connectives rule
 	connectivesrule = productiondict['connectives']
-	print("Connectives",connectivesrule)
+	#print("Connectives",connectivesrule)
 	if formula[lookahead] in connectivesrule:
-		print('Connectives match')
+		#print('Connectives match')
 		global uniqueids
 		currentnode = [Node(formula[lookahead]+ "\r"*uniqueids)]
 		
 		uniqueids +=1
 		return 1,currentnode
 	else:
-		print("ERROR in connectives function")
-		print(formula[lookahead]," is not a connective")
+		# f.write('ERROR in validation: '+formula[lookahead]+' did not match a connective\n')
+		# sys.exit()
+		#print("ERROR in connectives function")
+		#print(formula[lookahead]," is not a connective")
 		return 0,"nothing"
 
 
@@ -651,15 +656,17 @@ def quantifierproc():
 	quantifiersrule = productiondict['quantifiers']
 
 	if formula[lookahead] in quantifiersrule:
-		print('Quantifiers match')
+		#print('Quantifiers match')
 		global uniqueids
 		currentnode = [Node(formula[lookahead]+ "\r"*uniqueids)]
 		
 		uniqueids +=1
 		return 1, currentnode
 	else:
-		print("ERROR in quantifiers function")
-		print(formula[lookahead]," is not a quantifier")
+		# f.write('ERROR in validation: '+formula[lookahead]+' did not match a quantifier\n')
+		# sys.exit()
+		#print("ERROR in quantifiers function")
+		#print(formula[lookahead]," is not a quantifier")
 		return 0,"nothing"
 
 
@@ -676,9 +683,9 @@ def predicateproc():
 	found = False
 	for i in range(len(predicaterules)):
 
-		print("formula lookahead is ",formula[lookahead])
+		#print("formula lookahead is ",formula[lookahead])
 		if formula[lookahead] in names:
-			print(formula[lookahead]," in names list, so match")
+			#print(formula[lookahead]," in names list, so match")
 			prednode = [Node(formula[lookahead]+'\r'*uniqueids)]
 			currentnode.extend(prednode)
 
@@ -687,11 +694,11 @@ def predicateproc():
 
 			if formula[lookahead] == "(":
 				match()
-				print(formula[lookahead], "is (, so match")
+				#print(formula[lookahead], "is (, so match")
 
 				currentarity = aritylist[i]
 
-				print("Current arity is ",currentarity)
+				#print("Current arity is ",currentarity)
 
 				for j in range(int(currentarity)):
 					#iterate through the arity
@@ -701,7 +708,7 @@ def predicateproc():
 						#add this to the node list
 						varthisnode = [Node(formula[lookahead]+ '\r'*uniqueids)]
 						#varthisnode = [Node(formula[lookahead])]
-						print("var node",varthisnode)
+						#print("var node",varthisnode)
 						currentnode.extend(varthisnode)
 						match()
 
@@ -710,12 +717,12 @@ def predicateproc():
 						match()
 
 				
-				print("predicate current node 1",currentnode)
+				#print("predicate current node 1",currentnode)
 				#now make everything the child of the predicate name - which will be the parent in this case
 				for k in range(1,len(currentnode)):
 					currentnode[k].parent = currentnode[0]
 
-				print("predicate current node",currentnode)
+				#print("predicate current node",currentnode)
 
 				if formula[lookahead] == ")":
 					#match()
@@ -723,13 +730,20 @@ def predicateproc():
 					found = True
 					print("Predicate match")
 					return 1,currentnode
+				# else:
+				# 	f.write('ERROR in validation: '+formula[lookahead]+' did not match the closing bracket of predicate\n')
+				# 	sys.exit()
 
 			else:
-				print(formula[lookahead],"is not (")
+				# f.write('ERROR in validation: '+formula[lookahead]+' did not match the opening bracket of predicate\n')
+				# sys.exit()
+				#print(formula[lookahead],"is not (")
 				break
 		
 		else:
-			print(formula[lookahead]," is not a valid predicate name")
+			# f.write('ERROR in validation: '+formula[lookahead]+' is not a given predicate name\n')
+			# sys.exit()
+			#print(formula[lookahead]," is not a valid predicate name")
 			break
 
 
@@ -771,8 +785,8 @@ def termequalityterm():
 								treedata[1].parent = treedata[0]
 								treedata[2].parent = treedata[0]
 
-								print("term equality term nodes")
-								print(treedata)
+								#print("term equality term nodes")
+								#print(treedata)
 								#match() #was commented out earlier
 								return 1,treedata
 							else:
@@ -799,39 +813,31 @@ def fcf():
 	currentdata =[]
 
 	if formula[lookahead]=="(":
-		print("fcf: ( match",formula[lookahead])
+		#print("fcf: ( match",formula[lookahead])
 		match()
 
 		formula1check, formula1data = formulaproc()
-		print("formula1data ",formula1data)
+		#print("formula1data ",formula1data)
 		if formula1check==1:
-			print("fcf: formula match",formula[lookahead])
+			#print("fcf: formula match",formula[lookahead])
 			match()
 
 			connectivecheck, connectivedata = connectiveproc()
 			if connectivecheck==1:
-				print("fcf: connective match",formula[lookahead])
+				#print("fcf: connective match",formula[lookahead])
 				match()
 
 				formula2check, formula2data = formulaproc()
-				print("formula2data",formula2data)
+				#print("formula2data",formula2data)
 				if formula2check==1:
-					print("fcf: formula match",formula[lookahead])
+					#print("fcf: formula match",formula[lookahead])
 					match()
 
 					if formula[lookahead]==")":
-						print("fcf: ) match",formula[lookahead])
+						#print("fcf: ) match",formula[lookahead])
 						#match()\
 						currentdata.extend(connectivedata)
 						#add the opening bracket
-						#global uniqueids
-						#opbrack = [Node('('+'\r'*uniqueids)]
-						# print("Open bracket")
-						# opbrack = [Node('(')]
-						# uniqueids += 1
-						# opbrack[0].parent = currentdata[0]
-						# print(opbrack)
-						# currentdata.extend(opbrack)
 
 						formula1data[0].parent = currentdata[0]
 						currentdata.extend(formula1data) 
@@ -841,49 +847,42 @@ def fcf():
 						formula2data[0].parent = currentdata[0]
 						currentdata.extend(formula2data)
 
-						#closebrack = [Node(')'+'\r'*uniqueids)]
-						# print("Closed bracket")
-						# closebrack = [Node(')')]
-						# uniqueids += 1
-						# closebrack[0].parent = currentdata[0]
-						# print(closebrack)
-						# currentdata.extend(opbrack)
 
-						print("current data is ",currentdata)
+						#print("current data is ",currentdata)
 
 						#make the first element of formula1data the child of connective
 						#currentdata[1].parent = currentdata[0]
 
 
-						print("fcf")
-						print(currentdata)
-						print(currentdata[0])
-						print(currentdata[1])
-						print(currentdata[2])
+						# print("fcf")
+						# print(currentdata)
+						# print(currentdata[0])
+						# print(currentdata[1])
+						# print(currentdata[2])
 
 
 						return 1, currentdata
 					else:
-						print("fcf: NO ) match",formula[lookahead])
+						#print("fcf: NO ) match",formula[lookahead])
 						#lookahead =0 
 						return 0,"nothing"
 
 				else:
-					print("fcf: NO second formula match",formula[lookahead])
+					#print("fcf: NO second formula match",formula[lookahead])
 					#lookahead = 0
 					return 0,"nothing"
 
 			else:
-				print("fcf: NO connective match",formula[lookahead])
+				#print("fcf: NO connective match",formula[lookahead])
 				#lookahead = 0
 				return 0,"nothing"
 
 		else:
-			print("fcf: NO first formula match",formula[lookahead])
+			#print("fcf: NO first formula match",formula[lookahead])
 			#lookahead = 0
 			return 0,"nothing"
 	else:
-		print("fcf: NO ( match",formula[lookahead])
+		#print("fcf: NO ( match",formula[lookahead])
 		#lookahead = 0
 		return 0,"nothing"
 
@@ -897,12 +896,12 @@ def qvf():
 	checkquantifier, quantifierdata = quantifierproc()
 
 	if checkquantifier==1:
-		print("qvf: quantifier match",formula[lookahead])
+		#print("qvf: quantifier match",formula[lookahead])
 		match()
 
 		checkvariable, variabledata = variableproc()
 		if checkvariable==1:
-			print("qvf: variable match",formula[lookahead])
+			#print("qvf: variable match",formula[lookahead])
 			match()
 
 			formulacheck, formuladata = formulaproc()
@@ -921,17 +920,17 @@ def qvf():
 				return 1,currentdata
 
 			else:
-				print("qvf: formula NO match",formula[lookahead])
+				#print("qvf: formula NO match",formula[lookahead])
 				#lookahead =0
 				return 0,"nothing"
 
 		else:
-			print("qvf: variable NO match",formula[lookahead])
+			#print("qvf: variable NO match",formula[lookahead])
 			#lookahead =0
 			return 0,"nothing"
 
 	else:
-		print("qvf: quantifier NO match",formula[lookahead])
+		#print("qvf: quantifier NO match",formula[lookahead])
 		#lookahead =0
 		return 0,"nothing"
 
@@ -943,7 +942,7 @@ def negformula():
 	currentdata= []
 	#negation element should be used here
 	if formula[lookahead] ==negationelement:
-		print("Negformula: \\neg match",formula[lookahead])
+		#print("Negformula: \\neg match",formula[lookahead])
 		negationNode = [Node(formula[lookahead]+'\r'*uniqueids)]
 		match()
 
@@ -960,7 +959,7 @@ def negformula():
 			return 0,"nothing"
 
 	else:
-		print("Negformula: \\neg NO match",formula[lookahead])
+		#print("Negformula: \\neg NO match",formula[lookahead])
 		#lookahead = 0 
 		return 0,"nothing"
 
@@ -976,7 +975,7 @@ def formulaproc():
 	#call fcf 
 	initlook = lookahead
 
-	print("Calling formula connective formula")
+	#print("Calling formula connective formula")
 
 	fcfresult, fcfdata = fcf()
 	if fcfresult == 0:
@@ -1013,31 +1012,40 @@ def formulaproc():
 					if tetresult == 0:
 						print("term equality term result is 0")
 						print("not a valid formula")
+						f.write("ERROR in validation: Input formula cannot be produced with (term equality term), (formula connective formula), quantifier variable formula, negation formula or predicate \n")
+						f.write("Therefore, this is an invalid input formula\n")
+						sys.exit()
 						return 0,"invalid"
 
 					else:
+						#check that the lookahead = len(formula), this will account for weird inputs with extra brackets and all
 						currentdata.extend(tetdata)
 
 						print("formula is term equality term")
+						f.write("Passed validation: The formula is valid\n")
 						return 1, currentdata
 
 				else:
 					currentdata.extend(preddata)
 					print("formula is predicate")
+					f.write("Passed validation: The formula is valid\n")
 					return 1, currentdata
 			else:
-				print('hello')
-				print(negdata)
+				# print('hello')
+				# print(negdata)
 				currentdata.extend(negdata)
 				print("formula is neg formula")
+				f.write("Passed validation: The formula is valid\n")
 				return 1, currentdata
 		else:
 			currentdata.extend(qvfdata)
 			print("formula is quantifier variable formula")
+			f.write("Passed validation: The formula is valid\n")
 			return 1, currentdata
 	else:
 		currentdata.extend(fcfdata)
 		print("formula is fcf")
+		f.write("Passed validation: The formula is valid\n")
 		return 1, currentdata
 
 
